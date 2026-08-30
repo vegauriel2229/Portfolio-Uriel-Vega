@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | Uriel Vega</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- Botón para cambiar idioma -->
+    <button id="langToggle" class="lang-toggle-btn">
+        <span class="es">English <i class="fa-solid fa-globe"></i></span>
+        <span class="en">Español <i class="fa-solid fa-globe"></i></span>
+    </button>
+
+    <!-- SECCIÓN: Inicio / Presentación -->
+    <header class="hero" id="inicio">
+        <div class="hero-content">
+            <h1>
+                <span class="es">¡Hola! Soy <span class="highlight">Uriel Vega</span></span>
+                <span class="en">Hi! I'm <span class="highlight">Uriel Vega</span></span>
+            </h1>
+            <h2>
+                <span class="es">Estudiante de Programación & Desarrollador Junior</span>
+                <span class="en">Programming Student & Junior Developer</span>
+            </h2>
+            <p>
+                <span class="es">Transformando lógica y código en soluciones reales.</span>
+                <span class="en">Transforming logic and code into real solutions.</span>
+            </p>
+            <a href="#proyectos" class="btn">
+                <span class="es">Ver mis proyectos</span>
+                <span class="en">View my projects</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- SECCIÓN: Tarjeta de Email -->
+    <section class="email-section">
+        <div class="email-card">
+            <i class="fa-solid fa-envelope mail-icon"></i>
+            <h3>
+                <span class="es">Contáctame directamente</span>
+                <span class="en">Contact me directly</span>
+            </h3>
+            <p>
+                <span class="es">Estoy disponible para nuevas oportunidades y proyectos.</span>
+                <span class="en">I am available for new opportunities and projects.</span>
+            </p>
+            <a href="mailto:urielvega2229@gmail.com" class="email-link">urielvega2229@gmail.com</a>
+        </div>
+    </section>
+
+    <!-- SECCIÓN: Sobre Mí -->
+    <section id="sobre-mi" class="section">
+        <h2 class="section-title">
+            <span class="es">Sobre Mí</span>
+            <span class="en">About Me</span>
+        </h2>
+        <div class="about-container">
+            <p class="es">Soy estudiante de la <strong>Tecnicatura Universitaria en Programación en la UTN</strong>. Me apasiona resolver problemas, ya sea escribiendo código, desarrollando algoritmos o reparando hardware en mis tiempos libres.</p>
+            <p class="en">I am a student of the <strong>University Technician in Programming degree at UTN</strong>. I am passionate about solving problems, whether it's writing code, developing algorithms, or repairing hardware in my free time.</p>
+            
+            <p class="es">Me considero una persona altamente organizada y disciplinada. Complemento mi formación técnica y mis clases de inglés con actividad física, como natación y gimnasio, lo que me ayuda a mantener el enfoque. Estoy buscando mi primera oportunidad laboral en el sector IT para aplicar mis conocimientos en Python, Java y seguir creciendo como profesional.</p>
+            <p class="en">I consider myself a highly organized and disciplined person. I complement my technical education and English classes with physical activity, such as swimming and going to the gym, which helps me stay focused. I am looking for my first job opportunity in the IT sector to apply my knowledge in Python, Java, and continue growing as a professional.</p>
+        </div>
+    </section>
+
+    <!-- SECCIÓN: Habilidades con barras animadas -->
+    <section id="habilidades" class="section bg-alt">
+        <h2 class="section-title">
+            <span class="es">Mis Habilidades</span>
+            <span class="en">My Skills</span>
+        </h2>
+        <div class="skills-container">
+            
+            <div class="skill-box">
+                <span class="title">Python</span>
+                <div class="skill-bar">
+                    <span class="skill-per" data-width="85%">
+                        <span class="tooltip">85%</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="skill-box">
+                <span class="title">Java</span>
+                <div class="skill-bar">
+                    <span class="skill-per" data-width="75%">
+                        <span class="tooltip">75%</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="skill-box">
+                <span class="title">HTML & CSS</span>
+                <div class="skill-bar">
+                    <span class="skill-per" data-width="45%">
+                        <span class="tooltip">45%</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="skill-box">
+                <span class="title">JavaScript</span>
+                <div class="skill-bar">
+                    <span class="skill-per" data-width="30%">
+                        <span class="tooltip">30%</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="skill-box">
+                <span class="title">
+                    <span class="es">Hardware (Reparación PC/Celulares)</span>
+                    <span class="en">Hardware (PC/Mobile Repair)</span>
+                </span>
+                <div class="skill-bar">
+                    <span class="skill-per" data-width="80%">
+                        <span class="tooltip">80%</span>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- SECCIÓN: Proyectos Vacíos -->
+    <section id="proyectos" class="section">
+        <h2 class="section-title">
+            <span class="es">Mis Proyectos</span>
+            <span class="en">My Projects</span>
+        </h2>
+        <div class="projects-grid" style="display: flex; justify-content: center;">
+            
+            <!-- Tarjeta de "Próximamente" para que no quede la pantalla rota -->
+            <div class="project-card" style="text-align: center; max-width: 500px;">
+                <div class="project-info">
+                    <h3>
+                        <span class="es"><i class="fa-solid fa-code"></i> Próximamente...</span>
+                        <span class="en"><i class="fa-solid fa-code"></i> Coming Soon...</span>
+                    </h3>
+                    <p>
+                        <span class="es">Actualmente estoy desarrollando mis primeros proyectos prácticos. ¡Vuelve pronto para ver mis repositorios y aplicaciones en vivo!</span>
+                        <span class="en">I am currently developing my first practical projects. Check back soon to see my repositories and live applications!</span>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- FOOTER: Redes y WhatsApp -->
+    <footer>
+        <div class="social-links">
+            <a href="#" target="_blank" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+            <a href="#" target="_blank" title="GitHub"><i class="fa-brands fa-github"></i></a>
+            <a href="https://wa.me/5492615776182" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+        </div>
+        <p>&copy; 2026 Cristian Uriel Vega Devito. <span class="es">Todos los derechos reservados.</span><span class="en">All rights reserved.</span></p>
+        <p>WhatsApp: +54 9 261 577-6182</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

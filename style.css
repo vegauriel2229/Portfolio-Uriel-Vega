@@ -1,0 +1,272 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* Variables de colores (Tema Morado / Magenta) */
+:root {
+    --bg-color: #170f23; /* Morado muy oscuro (Fondo principal) */
+    --bg-alt: #241838; /* Morado un poco más claro (Fondo secundario) */
+    --text-color: #f3e8ff; /* Texto lila muy claro / blanco */
+    --primary-color: #d946ef; /* Magenta brillante / Fucsia */
+    --accent-color: #a855f7; /* Morado vibrante */
+    --card-bg: #352554; /* Fondo de tarjetas */
+}
+
+/* --- MAGIA DEL DESLIZAMIENTO SUAVE --- */
+html {
+    scroll-behavior: smooth;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* --- LÓGICA DE IDIOMAS --- */
+/* Si el html está en "es", ocultamos todo lo que tenga clase "en" */
+[lang="es"] .en { display: none !important; }
+/* Si el html está en "en", ocultamos todo lo que tenga clase "es" */
+[lang="en"] .es { display: none !important; }
+
+/* Botón flotante de idioma */
+.lang-toggle-btn {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: 0.3s;
+    z-index: 100;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.lang-toggle-btn:hover {
+    background: var(--accent-color);
+    transform: scale(1.05);
+}
+
+/* Clases generales */
+.section {
+    padding: 80px 10%;
+}
+.bg-alt {
+    background-color: var(--bg-alt);
+}
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    color: var(--primary-color);
+}
+
+/* --- HERO (Presentación) --- */
+.hero {
+    height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(to bottom, #0d0814, var(--bg-color));
+}
+.hero-content h1 {
+    font-size: 4rem;
+    margin-bottom: 10px;
+}
+.highlight {
+    color: var(--primary-color);
+}
+.hero-content h2 {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: #d8b4fe;
+    margin-bottom: 20px;
+}
+.btn {
+    display: inline-block;
+    padding: 12px 28px;
+    background-color: var(--primary-color);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: 600;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+.btn:hover {
+    background-color: var(--accent-color);
+    box-shadow: 0 0 15px var(--primary-color);
+    transform: translateY(-3px);
+}
+
+/* --- TARJETA DE EMAIL --- */
+.email-section {
+    padding: 20px 10%;
+    display: flex;
+    justify-content: center;
+    margin-top: -50px;
+    z-index: 10;
+    position: relative;
+}
+.email-card {
+    background: linear-gradient(135deg, var(--card-bg), #241838);
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border: 1px solid #581c87;
+    max-width: 500px;
+    width: 100%;
+    transition: transform 0.3s ease;
+}
+.email-card:hover {
+    transform: translateY(-5px);
+}
+.mail-icon {
+    font-size: 3rem;
+    color: var(--accent-color);
+    margin-bottom: 15px;
+}
+.email-link {
+    display: block;
+    margin-top: 15px;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 600;
+    background: rgba(217, 70, 239, 0.15);
+    padding: 10px;
+    border-radius: 8px;
+    transition: background 0.3s;
+}
+.email-link:hover {
+    background: var(--primary-color);
+}
+
+/* --- SOBRE MÍ --- */
+.about-container {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 1.1rem;
+    color: #e9d5ff;
+}
+.about-container p {
+    margin-bottom: 20px;
+}
+
+/* --- HABILIDADES (BARRAS ANIMADAS) --- */
+.skills-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+.skill-box {
+    margin-bottom: 30px;
+}
+.skill-box .title {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+.skill-bar {
+    height: 12px;
+    width: 100%;
+    background-color: var(--card-bg);
+    border-radius: 6px;
+    position: relative;
+}
+.skill-per {
+    position: absolute;
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 6px;
+    width: 0; 
+    transition: width 1.5s ease-in-out;
+}
+.skill-per .tooltip {
+    position: absolute;
+    right: -14px;
+    top: -28px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background-color: var(--primary-color);
+    padding: 2px 6px;
+    border-radius: 3px;
+    opacity: 0; 
+    transition: opacity 1.5s;
+}
+.skill-per .tooltip::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -4px;
+    height: 10px;
+    width: 10px;
+    background-color: var(--primary-color);
+    transform: translateX(-50%) rotate(45deg);
+    z-index: -1;
+}
+
+/* --- PROYECTOS --- */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+.project-card {
+    background-color: var(--bg-alt);
+    border-radius: 10px;
+    padding: 25px;
+    border: 1px solid var(--card-bg);
+    transition: all 0.3s ease;
+}
+.project-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--primary-color);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+}
+.project-info h3 {
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    color: var(--text-color);
+}
+.project-info p {
+    color: #d8b4fe;
+    font-size: 0.95rem;
+}
+
+/* --- FOOTER --- */
+footer {
+    background-color: #0d0814;
+    text-align: center;
+    padding: 40px 10%;
+}
+.social-links {
+    margin-bottom: 20px;
+}
+.social-links a {
+    color: var(--text-color);
+    font-size: 1.8rem;
+    margin: 0 15px;
+    transition: color 0.3s;
+}
+.social-links a:hover {
+    color: var(--primary-color);
+}
+footer p {
+    color: #a855f7;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
