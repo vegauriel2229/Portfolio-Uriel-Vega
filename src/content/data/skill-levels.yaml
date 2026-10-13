@@ -1,0 +1,25 @@
+# Text values are copied unchanged (D-040). Map: the key is the id (advanced, intermediate, basic).
+
+advanced:
+  label:
+    es: "Avanzado"
+    en: "Advanced"
+  definition:
+    es: "Manejo esta área con autonomía: resuelvo problemas y avanzo en tareas complejas sin depender de guías."
+    en: "I work in this area independently: I solve problems and handle complex tasks without relying on guides."
+
+intermediate:
+  label:
+    es: "Intermedio"
+    en: "Intermediate"
+  definition:
+    es: "Tengo buenas bases y avanzo en tareas habituales; para temas nuevos consulto documentación."
+    en: "I have solid foundations and handle everyday tasks well; for new topics I check the documentation."
+
+basic:
+  label:
+    es: "Básico"
+    en: "Basic"
+  definition:
+    es: "Conozco los conceptos principales y lo uso en tareas puntuales; sigo aprendiendo."
+    en: "I know the core concepts and use it for specific tasks; I am still learning."

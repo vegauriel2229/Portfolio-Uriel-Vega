@@ -1,0 +1,16 @@
+# Text values are copied unchanged (D-040). Single object, no technologies, partner or client fields (R3.5, R3.6).
+
+id: restaurant-system
+title:
+  es: "Sistema para restaurantes"
+  en: "Restaurant ordering system"
+description:
+  es: "Sistema con backend y frontend, en desarrollo. El cliente escanea el QR del restaurante, ve el menú y hace su pedido desde ahí, y el pedido le llega a cocineros o encargados."
+  en: "A system with backend and frontend, currently in development. Customers scan the restaurant's QR code, browse the menu and order from there, and the order goes straight to the cooks or managers."
+status:
+  es: "En desarrollo"
+  en: "In development"
+progress:
+  es: "alrededor del 10 %"
+  en: "around 10%"
+links: []

@@ -1,5 +1,5 @@
-# Interface texts for the site (spec 002, R1.4). Approved by the user in D-120.
-# Every leaf is a Localized value { es, en }. Texts that come from spec 001 data are not repeated here.
+# Interface texts for the site (R1.4). Approved by the user (D-120, D-153).
+# Every leaf is a Localized value { es, en }. Texts that come from the data files (src/content/data/) are not repeated here.
 
 skipLink:
   es: "Saltar al contenido"
@@ -107,28 +107,49 @@ timeline:
     title:
       es: "Hoy: {skill}, nivel {level}"
       en: "Today: {skill}, {level} level"
-  agentsLabel:
-    es: "Agentes especializados"
-    en: "Specialized agents"
-  agents:
-    requirements:
-      es: "Requisitos"
-      en: "Requirements"
-    architecture:
-      es: "Arquitectura"
-      en: "Architecture"
-    design:
-      es: "Diseño"
-      en: "Design"
-    development:
-      es: "Desarrollo"
-      en: "Development"
+  roles:
+    director:
+      es: "Orquestador"
+      en: "Orchestrator"
+    analyst:
+      es: "Analista de requisitos"
+      en: "Requirements analyst"
+    architect:
+      es: "Arquitecto"
+      en: "Architect"
+    designer:
+      es: "Diseñador UI"
+      en: "UI designer"
+    frontend:
+      es: "Dev Frontend"
+      en: "Frontend dev"
+    backend:
+      es: "Dev Backend"
+      en: "Backend dev"
     qa:
-      es: "QA"
-      en: "QA"
+      es: "QA Tester"
+      en: "QA tester"
     security:
       es: "Seguridad"
       en: "Security"
+    devops:
+      es: "DevOps"
+      en: "DevOps"
+  rolesLabel:
+    es: "Orquestador y 8 agentes especializados"
+    en: "Orchestrator and 8 specialized agents"
+  stepStatus:
+    es: "Paso {n} de {total}: {title}"
+    en: "Step {n} of {total}: {title}"
+  litStatus:
+    es: "Los agentes están activos."
+    en: "The agents are active."
+  stepCounter:
+    es: "Paso {n} de {total}"
+    en: "Step {n} of {total}"
+  scrollHint:
+    es: "Al bajar, avanza la orquesta"
+    en: "Scroll to move the orchestra forward"
 
 skills:
   levelPrefix:
@@ -140,6 +161,30 @@ skills:
   legend:
     es: "Qué significa cada nivel"
     en: "What each level means"
+
+shots:
+  vegatech:
+    desktopAlt:
+      es: "Captura del sitio de VegaTech en una computadora: el título «Expertos en tu dispositivo móvil» sobre la imagen de un celular desarmado, con una luz violeta en el centro."
+      en: "Screenshot of the VegaTech website on a computer: the headline «Expertos en tu dispositivo móvil» (Spanish for “Experts in your mobile device”) over an image of a disassembled phone with a violet light at its center."
+    mobileAlt:
+      es: "Captura del sitio de VegaTech en un celular: el mismo título sobre el celular desarmado y un botón violeta de contacto."
+      en: "Screenshot of the VegaTech website on a phone: the same headline over the disassembled phone, with a violet contact button."
+  crisur:
+    desktopAlt:
+      es: "Captura del sitio de Crisur Polarizados en una computadora: el logo rojo de la empresa y el título «Polarizados para autos, hogares y negocios»."
+      en: "Screenshot of the Crisur Polarizados website on a computer: the company's red logo and the headline «Polarizados para autos, hogares y negocios» (Spanish for “Tinted film for cars, homes and businesses”)."
+    mobileAlt:
+      es: "Captura del sitio de Crisur Polarizados en un celular: el logo rojo, el título «Polarizados para autos, hogares y negocios» y un botón rojo de consulta."
+      en: "Screenshot of the Crisur Polarizados website on a phone: the red logo, the headline «Polarizados para autos, hogares y negocios» and a red inquiry button."
+
+mascot:
+  hide:
+    es: "Ocultar mascota"
+    en: "Hide mascot"
+  show:
+    es: "Mostrar mascota"
+    en: "Show mascot"
 
 whatsapp:
   floatLabel:

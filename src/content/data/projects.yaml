@@ -1,0 +1,62 @@
+# Text values are copied unchanged (D-040). Ordered list by `order` (R4.3). Link ids = type (D-046).
+# repository.publishable stays false until R15 is met in spec 002 (D-023).
+
+projects:
+  - id: vegatech
+    order: 1
+    featured: true
+    name: "VegaTech"
+    summary:
+      es: "Landing page de mi emprendimiento de reparación de celulares. Está terminada y tendrá actualizaciones. Hecha con JavaScript vanilla y Vite, publicada en Vercel."
+      en: "Landing page for my own phone repair business. It's finished and will keep getting updates. Built with vanilla JavaScript and Vite, deployed on Vercel."
+    status:
+      es: "Terminado, tendrá actualizaciones"
+      en: "Finished, with updates planned"
+    technologies:
+      - "JavaScript"
+      - "Vite"
+      - "Vercel"
+    links:
+      - id: website
+        type: website
+        url: "https://www.vegatech.com.ar"
+        label:
+          es: "Ver sitio de VegaTech"
+          en: "View VegaTech website"
+        publishable: true
+      - id: repository
+        type: repository
+        url: "https://github.com/vegauriel2229/web_vegatech"
+        label:
+          es: "Ver repositorio de VegaTech en GitHub"
+          en: "View VegaTech repository on GitHub"
+        publishable: false
+
+  - id: crisur
+    order: 2
+    featured: false
+    name: "Crisur Polarizados"
+    summary:
+      es: "Sitio institucional para el negocio de polarizados y esmerilado de mi papá. Está prácticamente terminado y le sigo haciendo mejoras. Hecho con Astro, publicado en Vercel."
+      en: "Business website for my father's window tinting and frosted film company. It's nearly finished and I keep improving it. Built with Astro, deployed on Vercel."
+    status:
+      es: "Prácticamente terminado, con mejoras en curso"
+      en: "Nearly finished, with improvements in progress"
+    technologies:
+      - "Astro"
+      - "Vercel"
+    links:
+      - id: website
+        type: website
+        url: "https://crisur-polarizados.vercel.app"
+        label:
+          es: "Ver sitio de Crisur Polarizados"
+          en: "View Crisur Polarizados website"
+        publishable: true
+      - id: repository
+        type: repository
+        url: "https://github.com/vegauriel2229/Crisur-Polarizados-"
+        label:
+          es: "Ver repositorio de Crisur Polarizados en GitHub"
+          en: "View Crisur Polarizados repository on GitHub"
+        publishable: false

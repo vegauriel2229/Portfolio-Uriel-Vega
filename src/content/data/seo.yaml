@@ -1,0 +1,15 @@
+# Text values are copied unchanged (D-040). ogTitle and ogDescription equal title and description (coherent, R12.3).
+
+siteUrl: "https://portfolio-uriel-two.vercel.app"
+title:
+  es: "Uriel Vega · Estudiante de Programación · Desarrollo con IA"
+  en: "Uriel Vega · Programming Student · AI Development"
+description:
+  es: "Soy Uriel Vega, estudiante de Programación en la UTN. Desarrollo con IA y agentes. Busco mi primer empleo en IT, abierto a todas sus áreas."
+  en: "I'm Uriel Vega, a programming student at UTN. I develop with AI and agents. Looking for my first IT job, open to all areas."
+ogTitle:
+  es: "Uriel Vega · Estudiante de Programación · Desarrollo con IA"
+  en: "Uriel Vega · Programming Student · AI Development"
+ogDescription:
+  es: "Soy Uriel Vega, estudiante de Programación en la UTN. Desarrollo con IA y agentes. Busco mi primer empleo en IT, abierto a todas sus áreas."
+  en: "I'm Uriel Vega, a programming student at UTN. I develop with AI and agents. Looking for my first IT job, open to all areas."

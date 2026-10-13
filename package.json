@@ -11,6 +11,7 @@
     "build": "node -e \"require('node:fs').rmSync('node_modules/.astro/data-store.json',{force:true})\" && astro check && astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "check:content": "node scripts/check-content.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

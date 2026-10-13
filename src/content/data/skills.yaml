@@ -1,0 +1,51 @@
+# Values copied unchanged (D-040). List with id (D-046). `name` is a string when not translated,
+# and Localized { es, en } when translated. `backedBy` lists project ids (D-038, D-041).
+
+skills:
+  - id: python
+    name: "Python"
+    level: advanced
+    backedBy: []
+  - id: hardware
+    name:
+      es: "Hardware (reparación de PC y celulares)"
+      en: "Hardware (PC and phone repair)"
+    level: advanced
+    backedBy: []
+  - id: ai-development
+    name:
+      es: "Desarrollo con IA (agentes y SDD)"
+      en: "AI development (agents and SDD)"
+    level: advanced
+    backedBy: []
+  - id: java
+    name: "Java"
+    level: intermediate
+    backedBy: []
+  - id: html-css
+    name: "HTML/CSS"
+    level: intermediate
+    backedBy:
+      - vegatech
+      - crisur
+  - id: javascript
+    name: "JavaScript"
+    level: intermediate
+    backedBy:
+      - vegatech
+  - id: git-github
+    name: "Git/GitHub"
+    level: intermediate
+    backedBy:
+      - vegatech
+      - crisur
+  - id: vercel
+    name: "Vercel"
+    level: intermediate
+    backedBy:
+      - vegatech
+      - crisur
+  - id: postgresql
+    name: "PostgreSQL"
+    level: basic
+    backedBy: []

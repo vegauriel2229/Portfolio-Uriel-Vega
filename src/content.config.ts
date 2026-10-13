@@ -3,9 +3,9 @@ import { file } from "astro/loaders";
 import { z } from "astro/zod";
 import { parse } from "yaml";
 
-// Data files of spec 001 are read where they live (D-089): the texts are never copied.
+// Data files live in the site (src/content/data/, D-135f); the texts are edited there.
 // Keep this table in sync with FILE_BY_COLLECTION in src/lib/content.ts (used for error messages).
-const DATA_DIR = "specs/001-contenido-reclutadores/data";
+const DATA_DIR = "src/content/data";
 
 // --- Reusable schemas. Every object is strict: unknown keys fail the build (R1.2). ---
 
@@ -30,7 +30,7 @@ const cvEntry = z.strictObject({
   available: z.boolean(),
 });
 
-// --- Spec 001 data ---
+// --- Content data (src/content/data/) ---
 
 const projects = defineCollection({
   loader: file(`${DATA_DIR}/projects.yaml`, {
@@ -141,7 +141,7 @@ const seo = defineCollection({
   }),
 });
 
-// --- Interface texts (R1.4): src/content/ui.yaml, keys of design section 6.11 ---
+// --- Interface texts (R1.4): src/content/ui.yaml, keys of design sections 6.11 and 6.13 ---
 
 const uiSchema = z.strictObject({
   skipLink: localized,
@@ -180,21 +180,35 @@ const uiSchema = z.strictObject({
     step2: z.strictObject({ title: localized }),
     step3: z.strictObject({ title: localized }),
     step4: z.strictObject({ title: localized }),
-    agentsLabel: localized,
-    agents: z.strictObject({
-      requirements: localized,
-      architecture: localized,
-      design: localized,
-      development: localized,
+    roles: z.strictObject({
+      director: localized,
+      analyst: localized,
+      architect: localized,
+      designer: localized,
+      frontend: localized,
+      backend: localized,
       qa: localized,
       security: localized,
+      devops: localized,
     }),
+    rolesLabel: localized,
+    stepStatus: localized,
+    litStatus: localized,
+    stepCounter: localized,
+    scrollHint: localized,
   }),
   skills: z.strictObject({
     levelPrefix: localized,
     backedBy: localized,
     legend: localized,
   }),
+  // Alternative texts of the project screenshots, keyed by project id (R22.5). The guard in lib/content.ts
+  // checks that every project has its entry.
+  shots: z.record(
+    text,
+    z.strictObject({ desktopAlt: localized, mobileAlt: localized }),
+  ),
+  mascot: z.strictObject({ hide: localized, show: localized }),
   whatsapp: z.strictObject({ floatLabel: localized }),
   footer: z.strictObject({ rights: localized }),
   notFound: z.strictObject({

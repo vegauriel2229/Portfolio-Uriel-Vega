@@ -1,0 +1,95 @@
+# Text values are copied unchanged (D-040). Each Localized value is { es, en }. Paragraph ids = topic (D-046).
+
+identity:
+  name: "Uriel Vega"
+  role:
+    es: "Estudiante de Programación · Desarrollo con IA · Abierto a todas las áreas de IT"
+    en: "Programming student · AI-assisted development · Open to all IT fields"
+
+hero:
+  greeting:
+    es: "Hola, soy Uriel Vega"
+    en: "Hi, I'm Uriel Vega"
+  ctaLabel:
+    es: "Ver mis proyectos"
+    en: "See my projects"
+
+about:
+  paragraphs:
+    - id: estudios
+      es: "Soy estudiante de la Tecnicatura Universitaria en Programación en la UTN. Estoy en el último semestre y mi egreso estimado es a mediados de 2027."
+      en: "I'm a student in the Technical Degree in Programming at UTN, in my final semester, expecting to graduate around mid-2027."
+    - id: busqueda
+      es: "Busco mi primer empleo en IT, como pasantía o part-time, y estoy abierto a aprender en distintas áreas, no solo desarrollo web. Puedo trabajar en forma remota o presencial desde Godoy Cruz, Mendoza."
+      en: "I'm looking for my first job in IT, as an internship or part-time role, and I'm open to learning across different areas, not just web development. I can work remotely or on-site from Godoy Cruz, Mendoza."
+    - id: proyectos
+      es: "Desarrollé VegaTech, la landing de mi emprendimiento de reparación de celulares, y el sitio institucional de Crisur Polarizados. Además, estoy construyendo un sistema para restaurantes."
+      en: "I built VegaTech, the landing page for my phone repair business, and the website for Crisur Polarizados. I'm also building a restaurant ordering system."
+    - id: hardware
+      es: "Reparo hardware de PC y celulares en mis tiempos libres."
+      en: "I repair PC and phone hardware in my free time."
+    - id: ia-sdd
+      es: "Desarrollo con IA usando agentes: hice un curso y armé mi propio equipo de agentes especializados (requisitos, arquitectura, diseño, desarrollo, QA y seguridad), que orquesto con la metodología SDD."
+      en: "AI-assisted development with agents: after taking a course, I built my own team of specialized agents (requirements, architecture, design, development, QA and security) and I orchestrate them using the SDD methodology."
+  sddExplanation:
+    es: "SDD (Spec-Driven Development) es una forma de trabajar en la que primero se describe por escrito qué se va a construir, y recién después se programa."
+    en: "SDD (Spec-Driven Development) is a way of working where you first describe in writing what will be built, and only then write the code."
+
+hiring:
+  location:
+    es: "Godoy Cruz, Mendoza"
+    en: "Godoy Cruz, Mendoza"
+  workMode:
+    es: "Remoto o presencial"
+    en: "Remote or on-site"
+  seeking:
+    es: "Busco pasantía o part-time"
+    en: "I am looking for an internship or part-time role"
+  availability:
+    es: "Curso por la mañana y estoy disponible por la tarde"
+    en: "I study in the mornings and I'm available in the afternoons"
+  education:
+    es: "Tecnicatura Universitaria en Programación, UTN. Último semestre; egreso estimado a mediados de 2027."
+    en: "Technical Degree in Programming (Tecnicatura Universitaria en Programación), UTN. Final semester; expected graduation in mid-2027."
+  english:
+    es: "B1 en curso, finaliza en diciembre de 2026"
+    en: "B1 (in progress, completing December 2026)"
+
+contact:
+  email: "urielvega2229@gmail.com"
+  emailUrl: "mailto:urielvega2229@gmail.com"
+  phone: "2615776182"
+  whatsappUrl: "https://wa.me/5492615776182"
+  labels:
+    email:
+      es: "Enviar email"
+      en: "Send an email"
+    whatsapp:
+      es: "Escribir por WhatsApp"
+      en: "Message on WhatsApp"
+    phone:
+      es: "Llamar al 2615776182"
+      en: "Call 2615776182"
+
+socials:
+  github:
+    url: "https://github.com/vegauriel2229"
+    label:
+      es: "Ver mi perfil de GitHub"
+      en: "See my GitHub profile"
+
+cv:
+  es:
+    file: "assets/Uriel-Vega-CV-ES.pdf"
+    downloadName: "Uriel-Vega-CV-ES.pdf"
+    label:
+      es: "Descargar CV (español)"
+      en: "Download CV (Spanish)"
+    available: true
+  en:
+    file: "assets/Uriel-Vega-CV-EN.pdf"
+    downloadName: "Uriel-Vega-CV-EN.pdf"
+    label:
+      es: "Descargar CV (inglés)"
+      en: "Download CV (English)"
+    available: true

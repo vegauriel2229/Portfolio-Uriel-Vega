@@ -1,6 +1,7 @@
 import { getCollection, getEntry, type CollectionEntry } from "astro:content";
 import { assertCvFiles } from "@/lib/cv";
 import { LOCALES } from "@/lib/i18n";
+import { SHOTS } from "@/lib/shots";
 
 type Data<Name extends keyof typeof FILE_BY_COLLECTION> =
   CollectionEntry<Name>["data"];
@@ -18,12 +19,12 @@ export interface Content {
 
 /** Collection -> file, so every error names the YAML file (R1.2, R11.4). */
 const FILE_BY_COLLECTION = {
-  projects: "specs/001-contenido-reclutadores/data/projects.yaml",
-  currentWork: "specs/001-contenido-reclutadores/data/current-work.yaml",
-  profile: "specs/001-contenido-reclutadores/data/profile.yaml",
-  skillLevels: "specs/001-contenido-reclutadores/data/skill-levels.yaml",
-  skills: "specs/001-contenido-reclutadores/data/skills.yaml",
-  seo: "specs/001-contenido-reclutadores/data/seo.yaml",
+  projects: "src/content/data/projects.yaml",
+  currentWork: "src/content/data/current-work.yaml",
+  profile: "src/content/data/profile.yaml",
+  skillLevels: "src/content/data/skill-levels.yaml",
+  skills: "src/content/data/skills.yaml",
+  seo: "src/content/data/seo.yaml",
   ui: "src/content/ui.yaml",
 } as const;
 
@@ -162,6 +163,12 @@ function assertContentIntegrity(content: Content): void {
   ][] = [
     ["timeline.step4.title", ui.timeline.step4.title, ["{skill}", "{level}"]],
     ["footer.rights", ui.footer.rights, ["{year}"]],
+    [
+      "timeline.stepStatus",
+      ui.timeline.stepStatus,
+      ["{n}", "{total}", "{title}"],
+    ],
+    ["timeline.stepCounter", ui.timeline.stepCounter, ["{n}", "{total}"]],
   ];
   for (const [field, value, markers] of templates) {
     for (const locale of LOCALES) {
@@ -170,6 +177,20 @@ function assertContentIntegrity(content: Content): void {
           fail("ui", `${field}.${locale}: falta el marcador ${marker}`);
       }
     }
+  }
+
+  // Every project has its screenshots and their alternative texts (R22.5, R22.9). The restaurant system has none (R22.11).
+  for (const project of projects) {
+    if (!(project.id in SHOTS))
+      fail(
+        "projects",
+        `${project.id} (id): no tiene capturas en src/lib/shots.ts (SHOTS)`,
+      );
+    if (!(project.id in ui.shots))
+      fail(
+        "ui",
+        `shots.${project.id}: faltan los textos alternativos (desktopAlt, mobileAlt) del proyecto`,
+      );
   }
 
   assertCvFiles(profile.cv);

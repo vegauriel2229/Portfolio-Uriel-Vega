@@ -14,18 +14,15 @@ export interface Cv {
   label: string;
 }
 
-const DATA_DIR = "/specs/001-contenido-reclutadores/";
-const PROFILE_FILE = "specs/001-contenido-reclutadores/data/profile.yaml";
+const DATA_DIR = "/src/content/";
+const PROFILE_FILE = "src/content/data/profile.yaml";
 
 // Vite publishes the PDFs untouched, with a content hash in the name (long cache, R18.4).
-const pdfUrls = import.meta.glob<string>(
-  "/specs/001-contenido-reclutadores/assets/*.pdf",
-  {
-    query: "?url",
-    import: "default",
-    eager: true,
-  },
-);
+const pdfUrls = import.meta.glob<string>("/src/content/assets/*.pdf", {
+  query: "?url",
+  import: "default",
+  eager: true,
+});
 
 function pdfUrl(file: string): string | undefined {
   // `file` is relative to the data folder's parent, e.g. "assets/Uriel-Vega-CV-ES.pdf".

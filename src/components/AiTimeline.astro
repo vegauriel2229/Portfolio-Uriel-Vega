@@ -22,14 +22,8 @@ const todayTitle =
       })
     : "";
 
-const agents = [
-  ui.timeline.agents.requirements,
-  ui.timeline.agents.architecture,
-  ui.timeline.agents.design,
-  ui.timeline.agents.development,
-  ui.timeline.agents.qa,
-  ui.timeline.agents.security,
-];
+// Minimal adjustment for the new roles (T4); the final shape of the timeline arrives in T7.
+const roles = Object.values(ui.timeline.roles);
 const aiParagraph = profile.about.paragraphs.find(
   (paragraph) => paragraph.id === "ia-sdd",
 );
@@ -55,16 +49,16 @@ const aiParagraph = profile.about.paragraphs.find(
       <h4 class="text-h4">{localize(ui.timeline.step2.title, locale)}</h4>
       <ul
         role="list"
-        aria-label={localize(ui.timeline.agentsLabel, locale)}
+        aria-label={localize(ui.timeline.rolesLabel, locale)}
         class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 min-[600px]:grid-cols-3"
       >
-        {agents.map((agent) => (
+        {roles.map((role) => (
           <li class="flex items-center gap-2">
             <span
               aria-hidden="true"
               class="size-2 shrink-0 rounded-full bg-mark"
             />
-            {localize(agent, locale)}
+            {localize(role, locale)}
           </li>
         ))}
       </ul>

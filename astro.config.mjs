@@ -4,10 +4,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, fontProviders } from "astro/config";
 import { parse } from "yaml";
 
-// The site URL lives in one place: the approved SEO data of spec 001 (RNF12).
-const seo = parse(
-  readFileSync("./specs/001-contenido-reclutadores/data/seo.yaml", "utf-8"),
-);
+// The site URL lives in one place: the approved SEO data (RNF12).
+const seo = parse(readFileSync("./src/content/data/seo.yaml", "utf-8"));
 
 // https://astro.build/config
 export default defineConfig({
