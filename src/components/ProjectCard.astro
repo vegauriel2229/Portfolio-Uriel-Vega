@@ -1,12 +1,15 @@
 ---
 import type { Content } from "@/lib/content";
 import { localize, type Locale } from "@/lib/i18n";
+import { SHOTS } from "@/lib/shots";
 import ExternalLinkIcon from "@/components/icons/ExternalLinkIcon.astro";
+import ProjectShots from "@/components/ProjectShots.astro";
 
 interface Props {
   locale: Locale;
   project: Content["projects"][number];
   ui: Content["ui"];
+  /** Featured project: larger title and screenshot on the right. The other one is mirrored (design section 6.6). */
   featured: boolean;
 }
 
@@ -14,52 +17,75 @@ const { locale, project, ui, featured } = Astro.props;
 
 // Links that are not publishable are not drawn and leave no space (R4.3).
 const links = project.links.filter((link) => link.publishable);
+
+// The guard in lib/content.ts guarantees that every project has its screenshots (R22.9).
+const shots = SHOTS[project.id]!;
+const alts = ui.shots[project.id]!;
+
+// The address pill shows the host of the project website (decorative).
+const website = project.links.find((link) => link.type === "website");
+const domain = website ? new URL(website.url).host : undefined;
 ---
 
 <article
   class:list={[
-    "max-w-[58rem] rounded-lg border border-hair bg-surface p-(--space-card)",
-    featured && "border-t-4 border-t-accent",
+    "grid gap-8 min-[900px]:items-center min-[900px]:gap-14",
+    featured
+      ? "min-[900px]:grid-cols-[5fr_7fr]"
+      : "min-[900px]:grid-cols-[7fr_5fr]",
   ]}
 >
-  <h3 class:list={[featured ? "text-h3-lg" : "text-h3"]}>{project.name}</h3>
-  <p class="mt-3 max-w-[58ch]">{localize(project.summary, locale)}</p>
-  <dl class="mt-5 grid gap-3">
-    <div>
-      <dt class="text-small text-muted">
-        {localize(ui.fields.status, locale)}
-      </dt>
-      <dd class="flex items-center gap-2 font-bold">
-        <span
-          aria-hidden="true"
-          class="size-2.5 shrink-0 rounded-full bg-signal"
-        ></span>
-        {localize(project.status, locale)}
-      </dd>
-    </div>
-    <div>
-      <dt class="text-small text-muted">
-        {localize(ui.fields.technologies, locale)}
-      </dt>
-      <dd class="font-bold">{project.technologies.join(", ")}</dd>
-    </div>
-  </dl>
-  {links.length > 0 && (
-    <ul class="mt-6 flex flex-col gap-3 md:flex-row md:flex-wrap">
-      {links.map((link) => (
-        <li>
-          <a
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="tap inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-accent px-5 text-label font-bold text-accent hover:bg-accent hover:text-bg-deep"
-          >
-            {localize(link.label, locale)}
-            <ExternalLinkIcon class="size-5 shrink-0" />
-            <span class="sr-only">{localize(ui.external.newTab, locale)}</span>
-          </a>
-        </li>
-      ))}
-    </ul>
-  )}
+  <div>
+    <h3 class:list={[featured ? "text-h3-lg" : "text-h3"]}>{project.name}</h3>
+    <p class="mt-3 max-w-[52ch]">{localize(project.summary, locale)}</p>
+    <dl class="mt-5 grid gap-3">
+      <div>
+        <dt class="text-small text-muted">
+          {localize(ui.fields.status, locale)}
+        </dt>
+        <dd class="flex items-start gap-2 font-bold">
+          <span
+            aria-hidden="true"
+            class="mt-2 size-2.5 shrink-0 rounded-full bg-signal"
+          ></span>
+          {localize(project.status, locale)}
+        </dd>
+      </div>
+      <div>
+        <dt class="text-small text-muted">
+          {localize(ui.fields.technologies, locale)}
+        </dt>
+        <dd class="font-bold">{project.technologies.join(", ")}</dd>
+      </div>
+    </dl>
+    {links.length > 0 && (
+      <ul class="mt-6 flex flex-col items-start gap-3 md:flex-row md:flex-wrap">
+        {links.map((link) => (
+          <li>
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="tap inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-accent px-5 text-label font-bold text-accent hover:bg-accent hover:text-bg-deep"
+            >
+              {localize(link.label, locale)}
+              <ExternalLinkIcon class="size-5 shrink-0" />
+              <span class="sr-only">
+                {localize(ui.external.newTab, locale)}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+  <div class:list={[!featured && "min-[900px]:order-first"]}>
+    <ProjectShots
+      shots={shots}
+      domain={domain}
+      desktopAlt={localize(alts.desktopAlt, locale)}
+      mobileAlt={localize(alts.mobileAlt, locale)}
+      mirrored={!featured}
+    />
+  </div>
 </article>

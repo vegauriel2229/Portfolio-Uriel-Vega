@@ -1,4 +1,6 @@
+import { readFileSync } from "node:fs";
 import { getCollection, getEntry, type CollectionEntry } from "astro:content";
+import { parse } from "yaml";
 import { assertCvFiles } from "@/lib/cv";
 import { LOCALES } from "@/lib/i18n";
 import { SHOTS } from "@/lib/shots";
@@ -38,6 +40,24 @@ const ABOUT_PARAGRAPH_IDS = [
   "ia-sdd",
 ];
 const AI_SKILL_ID = "ai-development";
+
+/** Entries sorted like the `id` list that the YAML file has under `key` (or at the top level). */
+function sortByFileOrder<T extends { id: string; data: unknown }>(
+  entries: T[],
+  file: string,
+  key: string,
+): T["data"][] {
+  const parsed = parse(readFileSync(file, "utf-8")) as
+    Record<string, { id: string }[]> | undefined;
+  const ids = (parsed?.[key] ?? []).map((item) => item.id);
+  const rank = (id: string): number => {
+    const index = ids.indexOf(id);
+    return index === -1 ? ids.length : index;
+  };
+  return [...entries]
+    .sort((a, b) => rank(a.id) - rank(b.id))
+    .map((entry) => entry.data);
+}
 
 function fail(
   collection: keyof typeof FILE_BY_COLLECTION,
@@ -97,7 +117,8 @@ export async function getContent(): Promise<Content> {
     skillLevels: Object.fromEntries(
       levelEntries.map((entry) => [entry.id, entry.data]),
     ),
-    skills: skillEntries.map((entry) => entry.data),
+    // The collection comes back in no particular order: the order of the file is the one that matters (D-164).
+    skills: sortByFileOrder(skillEntries, FILE_BY_COLLECTION.skills, "skills"),
     seo: seoEntry.data,
     ui: uiEntry.data,
   };

@@ -1,6 +1,7 @@
 ---
 import type { Content } from "@/lib/content";
 import { localize, type Locale } from "@/lib/i18n";
+import LevelMeter from "@/components/LevelMeter.astro";
 
 interface Props {
   locale: Locale;
@@ -10,12 +11,22 @@ interface Props {
 const { locale, content } = Astro.props;
 const { skills, skillLevels, projects, ui } = content;
 
-const LEVEL_ORDER = ["advanced", "intermediate", "basic"] as const;
+const LEVELS = [
+  { id: "advanced", lit: 3 },
+  { id: "intermediate", lit: 2 },
+  { id: "basic", lit: 1 },
+] as const;
 
-// Ordered by level and, inside each level, by the order of the data (stable sort).
-const ordered = [...skills].sort(
-  (a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level),
-);
+// Groups in the order Advanced, Intermediate, Basic; inside each one, the order of the data.
+const groups = LEVELS.map(({ id, lit }) => ({
+  id,
+  lit,
+  level: skillLevels[id]!,
+  // Hidden text read after each name: "Python, nivel Avanzado" (R7.5).
+  levelText: `${localize(ui.skills.levelPrefix, locale)} ${localize(skillLevels[id]!.label, locale)}`,
+  skills: skills.filter((skill) => skill.level === id),
+})).filter((group) => group.skills.length > 0);
+
 const projectName = (id: string): string =>
   projects.find((project) => project.id === id)?.name ?? id;
 ---
@@ -27,48 +38,45 @@ const projectName = (id: string): string =>
   class="bg-bg text-text"
 >
   <div class="wrap py-(--space-section)">
-    <h2 id="skills-title" class="text-h2">
-      {localize(ui.sections.skills, locale)}
+    <h2 id="skills-title" data-reveal="rise" class="mask text-h2 text-balance">
+      <span>{localize(ui.sections.skills, locale)}</span>
     </h2>
 
-    <ul role="list" class="mt-8 max-w-[58rem]">
-      {ordered.map((skill) => (
-        <li class="border-b border-hair py-3">
-          <div class="flex items-end gap-3">
-            <span class="font-display text-h4-sm">
-              {localize(skill.name, locale)}
-            </span>
-            <span
-              aria-hidden="true"
-              class="mb-1.5 min-w-4 flex-1 border-b-2 border-dotted border-line"
-            />
-            <span class="shrink-0 font-bold">
-              <span class="sr-only">
-                {localize(ui.skills.levelPrefix, locale)}
-              </span>{" "}
-              {localize(skillLevels[skill.level]!.label, locale)}
-            </span>
-          </div>
-          {skill.backedBy.length > 0 && (
-            <p class="mt-1 text-small text-muted">
-              {localize(ui.skills.backedBy, locale)}{" "}
-              {skill.backedBy.map((ref) => projectName(ref.id)).join(", ")}
+    <div class="mt-8">
+      {groups.map((group) => (
+        <div
+          data-reveal="grow"
+          class="grid gap-4 border-t border-hair py-7 min-[900px]:grid-cols-[4fr_7fr] min-[900px]:gap-16"
+        >
+          <div>
+            <h3 class="flex items-center gap-3.5 text-h3">
+              {localize(group.level.label, locale)}
+              <LevelMeter lit={group.lit} />
+            </h3>
+            <p class="mt-2 max-w-[34ch] text-small text-muted">
+              {localize(group.level.definition, locale)}
             </p>
-          )}
-        </li>
-      ))}
-    </ul>
-
-    <h3 class="mt-12 text-h3">{localize(ui.skills.legend, locale)}</h3>
-    <dl class="mt-5 grid gap-5 md:grid-cols-3 md:gap-8">
-      {LEVEL_ORDER.map((id) => (
-        <div>
-          <dt class="font-bold">{localize(skillLevels[id]!.label, locale)}</dt>
-          <dd class="mt-1 text-small">
-            {localize(skillLevels[id]!.definition, locale)}
-          </dd>
+          </div>
+          <ul role="list" class="divide-y divide-hair">
+            {group.skills.map((skill) => (
+              <li class="py-3 first:pt-0">
+                <span class="font-display text-h4 font-medium">
+                  {localize(skill.name, locale)}
+                  <span class="sr-only">{group.levelText}</span>
+                </span>
+                {skill.backedBy.length > 0 && (
+                  <p class="text-small text-muted">
+                    {localize(ui.skills.backedBy, locale)}{" "}
+                    {skill.backedBy
+                      .map((ref) => projectName(ref.id))
+                      .join(", ")}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
       ))}
-    </dl>
+    </div>
   </div>
 </section>

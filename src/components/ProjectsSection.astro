@@ -19,16 +19,20 @@ const { projects, ui } = content;
   class="bg-bg text-text"
 >
   <div class="wrap py-(--space-section)">
-    <h2 id="projects-title" class="text-h2">
-      {localize(ui.sections.projects, locale)}
+    <h2
+      id="projects-title"
+      data-reveal="rise"
+      class="mask text-h2 text-balance"
+    >
+      <span>{localize(ui.sections.projects, locale)}</span>
     </h2>
-    <div class="mt-8 grid gap-8">
-      {projects.map((project, index) => (
+    <div class="mt-8 grid gap-16 min-[900px]:gap-24">
+      {projects.map((project) => (
         <ProjectCard
           locale={locale}
           project={project}
           ui={ui}
-          featured={index === 0}
+          featured={project.featured}
         />
       ))}
     </div>

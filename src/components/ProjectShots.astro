@@ -1,0 +1,86 @@
+---
+import { Picture } from "astro:assets";
+import type { ProjectShots } from "@/lib/shots";
+
+interface Props {
+  shots: ProjectShots;
+  /** Text shown in the address pill of the browser frame (decorative). */
+  domain?: string;
+  desktopAlt: string;
+  mobileAlt: string;
+  /** Phone on the bottom left instead of the bottom right (Crisur, mirrored columns, design section 6.6). */
+  mirrored: boolean;
+}
+
+const { shots, domain, desktopAlt, mobileAlt, mirrored } = Astro.props;
+
+// Display width of the desktop shot: 100 % of its column. At 900 px and up the column is 7/12 of the page
+// (wrap padding 2 x 1.25 rem + gap 3.5 rem = 6 rem), at most 644 px. Below 900 px it fills the wrap.
+// Widths are 1x, 1.5x and 2x of the widest display (859 px, capped at the 1440 px source) plus a small one.
+const DESKTOP_WIDTHS = [640, 860, 1290];
+const DESKTOP_SIZES =
+  "(min-width: 1200px) 40.25rem, (min-width: 900px) calc((100vw - 6rem) * 7 / 12), calc(100vw - 2.5rem)";
+// The phone is 24 % of the frame (min 84 px) and 20 % from 900 px: 206 px at most, 130 px on desktop.
+const MOBILE_WIDTHS = [210, 310, 390];
+const MOBILE_SIZES =
+  "(min-width: 900px) 8.125rem, max(84px, calc((100vw - 2.5rem) * 0.24))";
+
+// No `layout` and no `priority`: the responsive layouts add inline styles that the CSP blocks (design
+// section 4.8), and no screenshot may compete with the LCP of the home (R22.8).
+const common = {
+  formats: ["avif" as const],
+  fallbackFormat: "webp" as const,
+  quality: "mid" as const,
+  loading: "lazy" as const,
+  decoding: "async" as const,
+};
+---
+
+<figure data-reveal-group class="relative mb-6">
+  <div
+    data-reveal="fade"
+    class="overflow-hidden rounded-md border border-hair bg-bg-deep"
+  >
+    <div
+      aria-hidden="true"
+      class="flex h-9 items-center gap-1.5 border-b border-hair bg-surface px-3"
+    >
+      <i class="size-[9px] rounded-full bg-dim"></i>
+      <i class="size-[9px] rounded-full bg-dim"></i>
+      <i class="size-[9px] rounded-full bg-dim"></i>
+      {domain && (
+        <span class="ml-2 min-w-0 flex-1 truncate rounded-full bg-bg-deep px-3 text-small text-muted">
+          {domain}
+        </span>
+      )}
+    </div>
+    <div class="aspect-[16/10] overflow-hidden">
+      <Picture
+        {...common}
+        src={shots.desktop}
+        alt={desktopAlt}
+        widths={DESKTOP_WIDTHS}
+        sizes={DESKTOP_SIZES}
+        class="shot size-full object-cover object-top"
+      />
+    </div>
+  </div>
+  <div
+    data-reveal="fade"
+    class:list={[
+      "absolute -bottom-6 w-[24%] min-w-[84px] overflow-hidden rounded-lg border-[3px] border-line bg-bg-deep",
+      mirrored
+        ? "left-3 min-[900px]:-left-5 min-[900px]:w-[20%]"
+        : "right-3 min-[900px]:-right-5 min-[900px]:w-[20%]",
+    ]}
+  >
+    <Picture
+      {...common}
+      src={shots.mobile}
+      alt={mobileAlt}
+      widths={MOBILE_WIDTHS}
+      sizes={MOBILE_SIZES}
+      class="block h-auto w-full"
+    />
+  </div>
+</figure>

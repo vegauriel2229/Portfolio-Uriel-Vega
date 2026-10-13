@@ -200,7 +200,6 @@ const uiSchema = z.strictObject({
   skills: z.strictObject({
     levelPrefix: localized,
     backedBy: localized,
-    legend: localized,
   }),
   // Alternative texts of the project screenshots, keyed by project id (R22.5). The guard in lib/content.ts
   // checks that every project has its entry.

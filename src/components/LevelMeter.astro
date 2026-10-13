@@ -1,0 +1,15 @@
+---
+interface Props {
+  /** Lit bars out of 3: advanced = 3, intermediate = 2, basic = 1 (design section 6.7). */
+  lit: 1 | 2 | 3;
+}
+
+const { lit } = Astro.props;
+---
+
+{/* Decorative glyph of the level group: no numbers, no percentages (R7.3). The level is in the text. */}
+<span aria-hidden="true" class="meter">
+  {[1, 2, 3].map((bar) => (
+    <i class:list={[bar <= lit && "on"]} />
+  ))}
+</span>

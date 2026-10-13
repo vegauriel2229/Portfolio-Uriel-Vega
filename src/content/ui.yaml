@@ -158,9 +158,6 @@ skills:
   backedBy:
     es: "Respaldado por"
     en: "Backed by"
-  legend:
-    es: "Qué significa cada nivel"
-    en: "What each level means"
 
 shots:
   vegatech:
