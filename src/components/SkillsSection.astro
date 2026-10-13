@@ -1,0 +1,74 @@
+---
+import type { Content } from "@/lib/content";
+import { localize, type Locale } from "@/lib/i18n";
+
+interface Props {
+  locale: Locale;
+  content: Content;
+}
+
+const { locale, content } = Astro.props;
+const { skills, skillLevels, projects, ui } = content;
+
+const LEVEL_ORDER = ["advanced", "intermediate", "basic"] as const;
+
+// Ordered by level and, inside each level, by the order of the data (stable sort).
+const ordered = [...skills].sort(
+  (a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level),
+);
+const projectName = (id: string): string =>
+  projects.find((project) => project.id === id)?.name ?? id;
+---
+
+<section
+  id="skills"
+  data-tone="light"
+  aria-labelledby="skills-title"
+  class="bg-bg text-text"
+>
+  <div class="wrap py-(--space-section)">
+    <h2 id="skills-title" class="text-h2">
+      {localize(ui.sections.skills, locale)}
+    </h2>
+
+    <ul role="list" class="mt-8 max-w-[58rem]">
+      {ordered.map((skill) => (
+        <li class="border-b border-hair py-3">
+          <div class="flex items-end gap-3">
+            <span class="font-display text-h4-sm">
+              {localize(skill.name, locale)}
+            </span>
+            <span
+              aria-hidden="true"
+              class="mb-1.5 min-w-4 flex-1 border-b-2 border-dotted border-line"
+            />
+            <span class="shrink-0 font-bold">
+              <span class="sr-only">
+                {localize(ui.skills.levelPrefix, locale)}
+              </span>{" "}
+              {localize(skillLevels[skill.level]!.label, locale)}
+            </span>
+          </div>
+          {skill.backedBy.length > 0 && (
+            <p class="mt-1 text-small text-muted">
+              {localize(ui.skills.backedBy, locale)}{" "}
+              {skill.backedBy.map((ref) => projectName(ref.id)).join(", ")}
+            </p>
+          )}
+        </li>
+      ))}
+    </ul>
+
+    <h3 class="mt-12 text-h3">{localize(ui.skills.legend, locale)}</h3>
+    <dl class="mt-5 grid gap-5 md:grid-cols-3 md:gap-8">
+      {LEVEL_ORDER.map((id) => (
+        <div>
+          <dt class="font-bold">{localize(skillLevels[id]!.label, locale)}</dt>
+          <dd class="mt-1 text-small">
+            {localize(skillLevels[id]!.definition, locale)}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>

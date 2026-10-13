@@ -1,0 +1,70 @@
+---
+import type { Content } from "@/lib/content";
+import { localize, type Locale } from "@/lib/i18n";
+import MenuIcon from "@/components/icons/MenuIcon.astro";
+import LanguageSwitcher from "@/components/LanguageSwitcher.astro";
+
+interface Props {
+  locale: Locale;
+  ui: Content["ui"];
+}
+
+const { locale, ui } = Astro.props;
+
+// Same list feeds the inline navigation (from lg) and the mobile menu (design section 6.5.1).
+const items = [
+  { id: "projects", label: ui.sections.projects },
+  { id: "current-work", label: ui.sections.currentWork },
+  { id: "about", label: ui.sections.about },
+  { id: "skills", label: ui.sections.skills },
+  { id: "contact", label: ui.sections.contact },
+];
+---
+
+<header
+  data-tone="dark"
+  class="sticky top-0 z-40 border-t-4 border-accent bg-bg text-text [@media(max-height:30rem)]:static"
+>
+  <div class="wrap flex min-h-15 items-center gap-3 py-1">
+    <a
+      href="#home"
+      aria-label={localize(ui.home.logoLabel, locale)}
+      class="inline-flex size-(--size-touch) shrink-0 items-center justify-center rounded-full border-[1.5px] border-mark font-display text-label font-semibold text-mark hover:border-text hover:text-text"
+    >
+      UV
+    </a>
+    <nav aria-label={localize(ui.nav.label, locale)} class="ml-auto lg:mx-auto">
+      <ul class="hidden items-center gap-6 lg:flex">
+        {items.map(({ id, label }) => (
+          <li>
+            <a
+              href={`#${id}`}
+              class="inline-flex min-h-(--size-touch) items-center text-label font-bold underline-offset-[.3em] hover:underline hover:decoration-2 hover:decoration-mark active:text-link-hover"
+            >
+              {localize(label, locale)}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <details data-menu class="lg:hidden">
+        <summary class="inline-flex min-h-(--size-touch) cursor-pointer list-none items-center gap-2 rounded-full border border-line px-4 text-label font-bold hover:border-text [&::-webkit-details-marker]:hidden">
+          <MenuIcon class="size-5" />
+          {localize(ui.nav.menu, locale)}
+        </summary>
+        <ul class="absolute inset-x-0 top-full bg-surface">
+          {items.map(({ id, label }) => (
+            <li class="border-b border-hair">
+              <a
+                href={`#${id}`}
+                class="wrap flex min-h-12 items-center text-label font-bold hover:text-link hover:underline active:text-link-hover"
+              >
+                {localize(label, locale)}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
+    </nav>
+    <LanguageSwitcher locale={locale} ui={ui} />
+  </div>
+</header>

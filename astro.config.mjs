@@ -15,6 +15,8 @@ export default defineConfig({
   output: "static",
   trailingSlash: "never",
   build: { format: "file" },
+  // The site has no Markdown; Shiki's inline styles would also clash with the CSP (D-124).
+  markdown: { syntaxHighlight: false },
   // The root (/) is redirected to /es by vercel.json, so no automatic redirect here.
   i18n: {
     locales: ["es", "en"],

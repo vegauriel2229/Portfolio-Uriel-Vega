@@ -203,3 +203,81 @@
     --motion-progress: transform var(--duration-progress) var(--ease-standard);
   }
 }
+
+/* Page container: centered, 1200 px max, with the side gutter (design section 6.2.3). */
+@utility wrap {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--size-container);
+  padding-inline: var(--space-gutter);
+}
+
+@layer components {
+  /* Press feedback for buttons: 1 px down, only with a motion-friendly visitor (R12.7, R12.8). */
+  .press {
+    transition: var(--motion-press, none);
+  }
+  .press:active {
+    transform: translateY(1px);
+  }
+
+  /*
+   * AI timeline (design section 6.6). Without JavaScript every step reads the same and the line is complete.
+   * With JavaScript (class `js`) enhance.ts marks the step in view (data-active) and the ones before it (data-done).
+   */
+  .timeline > li {
+    position: relative;
+    padding-left: 2.5rem;
+    padding-bottom: 2rem;
+  }
+  .timeline > li:last-child {
+    padding-bottom: 0;
+  }
+  .timeline > li::before,
+  .timeline > li::after {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    top: 1.5rem;
+    bottom: -0.3rem;
+    width: 2px;
+  }
+  .timeline > li::before {
+    background: var(--tone-line);
+  }
+  .timeline > li::after {
+    background: var(--tone-mark);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: var(--motion-progress, none);
+  }
+  .timeline > li:last-child::before,
+  .timeline > li:last-child::after {
+    display: none;
+  }
+  .timeline-dot {
+    position: absolute;
+    left: 0;
+    top: 0.3rem;
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--tone-mark);
+    background: var(--tone-surface);
+  }
+  .timeline.js > li:not([data-active]) {
+    color: var(--tone-muted);
+  }
+  .timeline.js > li[data-active] h4 {
+    font-size: var(--text-h4-active);
+  }
+  .timeline.js > li[data-active] .timeline-dot {
+    background: var(--tone-mark);
+    box-shadow:
+      0 0 0 4px var(--tone-surface),
+      0 0 0 6px var(--tone-mark);
+  }
+  .timeline.js > li[data-done]::after {
+    transform: scaleY(1);
+  }
+}

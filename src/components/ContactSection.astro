@@ -1,0 +1,100 @@
+---
+import type { Content } from "@/lib/content";
+import { localize, type Locale } from "@/lib/i18n";
+import GitHubIcon from "@/components/icons/GitHubIcon.astro";
+import MailIcon from "@/components/icons/MailIcon.astro";
+import PhoneIcon from "@/components/icons/PhoneIcon.astro";
+import WhatsAppIcon from "@/components/icons/WhatsAppIcon.astro";
+
+interface Props {
+  locale: Locale;
+  content: Content;
+}
+
+const { locale, content } = Astro.props;
+const { profile, ui } = content;
+const { contact, socials } = profile;
+
+// Exactly 4 ways to get in touch, in this order (R8.1). External ones open a new tab (R8.5).
+const rows = [
+  {
+    id: "email",
+    href: contact.emailUrl,
+    label: contact.labels.email,
+    value: contact.email,
+    external: false,
+  },
+  {
+    id: "whatsapp",
+    href: contact.whatsappUrl,
+    label: contact.labels.whatsapp,
+    value: undefined,
+    external: true,
+  },
+  {
+    id: "phone",
+    href: `tel:${contact.phone}`,
+    label: contact.labels.phone,
+    value: undefined,
+    external: false,
+  },
+  {
+    id: "github",
+    href: socials.github.url,
+    label: socials.github.label,
+    value: undefined,
+    external: true,
+  },
+];
+---
+
+<section
+  id="contact"
+  data-tone="dark"
+  aria-labelledby="contact-title"
+  class="bg-bg text-text"
+>
+  <div class="wrap py-(--space-section)">
+    <h2 id="contact-title" class="text-h2">
+      {localize(ui.sections.contact, locale)}
+    </h2>
+    <ul role="list" class="mt-8 max-w-[36rem]">
+      {rows.map((row) => (
+        <li class="border-b border-hair">
+          <a
+            href={row.href}
+            target={row.external ? "_blank" : undefined}
+            rel={row.external ? "noopener noreferrer" : undefined}
+            class="group flex min-h-14 items-center gap-4 py-2 active:text-link-hover"
+          >
+            {row.id === "email" && (
+              <MailIcon class="size-6 shrink-0 text-mark" />
+            )}
+            {row.id === "whatsapp" && (
+              <WhatsAppIcon class="size-6 shrink-0 text-mark" />
+            )}
+            {row.id === "phone" && (
+              <PhoneIcon class="size-6 shrink-0 text-mark" />
+            )}
+            {row.id === "github" && (
+              <GitHubIcon class="size-6 shrink-0 text-mark" />
+            )}
+            <span class="min-w-0">
+              <span class="block text-h4 font-bold underline-offset-4 group-hover:underline group-hover:decoration-2 group-hover:decoration-mark">
+                {localize(row.label, locale)}
+                {row.external && (
+                  <span class="sr-only">
+                    {localize(ui.external.newTab, locale)}
+                  </span>
+                )}
+              </span>
+              {row.value && (
+                <span class="block text-small wrap-anywhere">{row.value}</span>
+              )}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

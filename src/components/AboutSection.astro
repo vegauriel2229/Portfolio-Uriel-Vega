@@ -1,0 +1,65 @@
+---
+import type { Content } from "@/lib/content";
+import { localize, type Locale } from "@/lib/i18n";
+import AiTimeline from "@/components/AiTimeline.astro";
+
+interface Props {
+  locale: Locale;
+  content: Content;
+}
+
+const { locale, content } = Astro.props;
+const { profile, ui } = content;
+
+// The 6 hiring facts (R6.1); the first 3 are the same keys shown in the home (R6.4).
+const facts = [
+  { label: ui.hiring.location, value: profile.hiring.location, wide: false },
+  { label: ui.hiring.workMode, value: profile.hiring.workMode, wide: false },
+  { label: ui.hiring.seeking, value: profile.hiring.seeking, wide: false },
+  {
+    label: ui.hiring.availability,
+    value: profile.hiring.availability,
+    wide: false,
+  },
+  { label: ui.hiring.education, value: profile.hiring.education, wide: true },
+  { label: ui.hiring.english, value: profile.hiring.english, wide: false },
+];
+
+// The AI paragraph (ia-sdd, the last one) lives in the AI panel, unchanged (R6.3).
+const paragraphs = profile.about.paragraphs.filter(
+  (paragraph) => paragraph.id !== "ia-sdd",
+);
+---
+
+<section
+  id="about"
+  data-tone="dark"
+  aria-labelledby="about-title"
+  class="bg-bg text-text"
+>
+  <div class="wrap py-(--space-section)">
+    <h2 id="about-title" class="text-h2">
+      {localize(ui.sections.about, locale)}
+    </h2>
+
+    <h3 class="mt-8 text-h3">{localize(ui.hiring.heading, locale)}</h3>
+    <dl class="mt-5 grid gap-x-8 gap-y-4 md:grid-cols-2">
+      {facts.map(({ label, value, wide }) => (
+        <div class:list={[wide && "md:col-span-2"]}>
+          <dt class="text-small text-muted">{localize(label, locale)}</dt>
+          <dd class="font-bold">{localize(value, locale)}</dd>
+        </div>
+      ))}
+    </dl>
+
+    <div class="mt-10 grid max-w-[58ch] gap-4">
+      {paragraphs.map((paragraph) => (
+        <p>{paragraph[locale]}</p>
+      ))}
+    </div>
+
+    <div class="mt-12 rounded-lg bg-surface p-(--space-card)">
+      <AiTimeline locale={locale} content={content} />
+    </div>
+  </div>
+</section>

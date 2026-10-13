@@ -1,0 +1,87 @@
+---
+import type { Content } from "@/lib/content";
+import { fillTemplate, localize, type Locale } from "@/lib/i18n";
+
+interface Props {
+  locale: Locale;
+  content: Content;
+}
+
+const { locale, content } = Astro.props;
+const { ui, profile, skills, skillLevels } = content;
+
+// Step 4 is composed from the data, so it follows the skill level if it changes (D-105, D-110).
+// The guard in lib/content.ts guarantees that this skill exists.
+const aiSkill = skills.find((skill) => skill.id === "ai-development");
+const level = aiSkill ? skillLevels[aiSkill.level] : undefined;
+const todayTitle =
+  aiSkill && level
+    ? fillTemplate(localize(ui.timeline.step4.title, locale), {
+        skill: localize(aiSkill.name, locale),
+        level: localize(level.label, locale),
+      })
+    : "";
+
+const agents = [
+  ui.timeline.agents.requirements,
+  ui.timeline.agents.architecture,
+  ui.timeline.agents.design,
+  ui.timeline.agents.development,
+  ui.timeline.agents.qa,
+  ui.timeline.agents.security,
+];
+const aiParagraph = profile.about.paragraphs.find(
+  (paragraph) => paragraph.id === "ia-sdd",
+);
+---
+
+<section
+  aria-labelledby="ai-title"
+  class="grid gap-8 lg:grid-cols-[5fr_7fr] lg:gap-12"
+>
+  <div class="lg:sticky lg:top-24 lg:self-start">
+    <h3 id="ai-title" class="text-h3">
+      {localize(ui.timeline.title, locale)}
+    </h3>
+    {aiParagraph && <p class="mt-4 max-w-[58ch]">{aiParagraph[locale]}</p>}
+  </div>
+  <ol role="list" data-timeline class="timeline">
+    <li>
+      <span aria-hidden="true" class="timeline-dot"></span>
+      <h4 class="text-h4">{localize(ui.timeline.step1.title, locale)}</h4>
+    </li>
+    <li>
+      <span aria-hidden="true" class="timeline-dot"></span>
+      <h4 class="text-h4">{localize(ui.timeline.step2.title, locale)}</h4>
+      <ul
+        role="list"
+        aria-label={localize(ui.timeline.agentsLabel, locale)}
+        class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 min-[600px]:grid-cols-3"
+      >
+        {agents.map((agent) => (
+          <li class="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              class="size-2 shrink-0 rounded-full bg-mark"
+            />
+            {localize(agent, locale)}
+          </li>
+        ))}
+      </ul>
+    </li>
+    <li>
+      <span aria-hidden="true" class="timeline-dot"></span>
+      <h4 class="text-h4">{localize(ui.timeline.step3.title, locale)}</h4>
+      <p class="mt-2 max-w-[58ch]">
+        {localize(profile.about.sddExplanation, locale)}
+      </p>
+    </li>
+    <li>
+      <span aria-hidden="true" class="timeline-dot"></span>
+      <h4 class="text-h4">{todayTitle}</h4>
+      {level && (
+        <p class="mt-2 max-w-[58ch]">{localize(level.definition, locale)}</p>
+      )}
+    </li>
+  </ol>
+</section>

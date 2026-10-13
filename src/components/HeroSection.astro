@@ -1,0 +1,74 @@
+---
+import type { Content } from "@/lib/content";
+import { getCv } from "@/lib/cv";
+import { localize, type Locale } from "@/lib/i18n";
+import DownloadIcon from "@/components/icons/DownloadIcon.astro";
+
+interface Props {
+  locale: Locale;
+  content: Content;
+}
+
+const { locale, content } = Astro.props;
+const { profile, ui } = content;
+const cv = getCv(profile.cv, locale);
+
+// The 3 hiring facts of the home (D-101); same keys as in "About me" (R6.4).
+const facts = [
+  { label: ui.hiring.location, value: profile.hiring.location },
+  { label: ui.hiring.workMode, value: profile.hiring.workMode },
+  { label: ui.hiring.seeking, value: profile.hiring.seeking },
+];
+---
+
+<section
+  id="home"
+  data-tone="dark"
+  aria-labelledby="home-title"
+  class="bg-bg text-text"
+>
+  <div class="wrap grid gap-10 py-(--space-section) lg:grid-cols-[7fr_4fr] lg:items-center lg:gap-16">
+    <div>
+      <h1 id="home-title" class="text-display">
+        {localize(profile.hero.greeting, locale)}
+      </h1>
+      <p class="mt-5 max-w-[40ch] text-lead">
+        {localize(profile.identity.role, locale)}
+      </p>
+      <div class="mt-7 flex flex-col items-start gap-3">
+        <a
+          href="#projects"
+          class="press inline-flex min-h-13 items-center rounded-full bg-accent px-7 text-label font-bold text-on-accent hover:bg-accent-hover"
+        >
+          {localize(profile.hero.ctaLabel, locale)}
+        </a>
+        {cv && (
+          <a
+            href={cv.href}
+            download={cv.downloadName}
+            class="inline-flex min-h-(--size-touch) items-center gap-2 text-label font-bold underline decoration-line decoration-2 underline-offset-4 hover:decoration-mark active:text-link-hover"
+          >
+            <DownloadIcon class="size-5" />
+            {cv.label}
+          </a>
+        )}
+      </div>
+    </div>
+    <aside
+      aria-labelledby="hiring-home-title"
+      class="rounded-lg bg-accent p-(--space-card) text-on-accent"
+    >
+      <h2 id="hiring-home-title" class="sr-only">
+        {localize(ui.hiring.heading, locale)}
+      </h2>
+      <dl>
+        {facts.map(({ label, value }) => (
+          <div class="border-t border-on-accent/45 py-3 first:border-t-0 first:pt-0 last:pb-0">
+            <dt class="text-small">{localize(label, locale)}</dt>
+            <dd class="font-bold">{localize(value, locale)}</dd>
+          </div>
+        ))}
+      </dl>
+    </aside>
+  </div>
+</section>

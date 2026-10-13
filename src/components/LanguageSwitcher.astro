@@ -1,0 +1,34 @@
+---
+import type { Content } from "@/lib/content";
+import { LOCALES, localize, type Locale } from "@/lib/i18n";
+
+interface Props {
+  locale: Locale;
+  ui: Content["ui"];
+}
+
+const { locale, ui } = Astro.props;
+---
+
+<div
+  role="group"
+  aria-label={localize(ui.lang.label, locale)}
+  class="flex items-center"
+>
+  {LOCALES.map((target) => (
+    <a
+      href={`/${target}`}
+      lang={target}
+      hreflang={target}
+      aria-label={localize(ui.lang[target].name, locale)}
+      aria-current={target === locale ? "true" : undefined}
+      data-lang-link
+      class:list={[
+        "inline-flex size-(--size-touch) items-center justify-center rounded-full text-label font-bold hover:text-text",
+        target === locale ? "border border-line text-text" : "text-muted",
+      ]}
+    >
+      {target.toUpperCase()}
+    </a>
+  ))}
+</div>

@@ -8,9 +8,11 @@ interface Props {
   lang: Locale;
   head: PageHead;
   skipLinkLabel: string;
+  /** Tone of the page background; sections set their own (D-106). */
+  tone?: "light" | "dark";
 }
 
-const { lang, head, skipLinkLabel } = Astro.props;
+const { lang, head, skipLinkLabel, tone = "light" } = Astro.props;
 ---
 
 <!doctype html>
@@ -46,21 +48,21 @@ const { lang, head, skipLinkLabel } = Astro.props;
       preload={[{ weight: 400, style: "normal", subset: "latin" }]}
     />
   </head>
-  <body data-tone="light">
+  <body data-tone={tone} class="flex min-h-svh flex-col bg-bg text-text">
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:inline-flex focus:min-h-(--size-touch) focus:items-center focus:border focus:border-line focus:bg-surface focus:px-4 focus:font-bold focus:text-text"
     >
       {skipLinkLabel}
     </a>
-    <header data-tone="dark" class="bg-bg text-text">
-      <slot name="header" />
-    </header>
-    <main id="main">
+    <slot name="header" />
+    <main id="main" class="flex-1">
       <slot />
     </main>
-    <footer data-tone="dark" class="bg-bg text-text">
-      <slot name="footer" />
-    </footer>
+    <slot name="footer" />
+    <slot name="floating" />
+    <script>
+      import "@/scripts/enhance";
+    </script>
   </body>
 </html>

@@ -1,0 +1,27 @@
+---
+import type { Content } from "@/lib/content";
+import { fillTemplate, localize, type Locale } from "@/lib/i18n";
+
+interface Props {
+  locale: Locale;
+  ui: Content["ui"];
+  /** Reserves room for the floating WhatsApp button so it never covers the last text (R9.4). */
+  reserveWhatsApp?: boolean;
+}
+
+const { locale, ui, reserveWhatsApp = true } = Astro.props;
+// Fixed at build time.
+const year = String(new Date().getFullYear());
+---
+
+<footer data-tone="dark" class="border-t border-hair bg-bg text-text">
+  <p
+    class:list={[
+      "wrap py-8 text-small",
+      reserveWhatsApp &&
+        "pb-[calc(3.5rem+2rem+env(safe-area-inset-bottom))] md:pb-[calc(3.5rem+3rem)]",
+    ]}
+  >
+    {fillTemplate(localize(ui.footer.rights, locale), { year })}
+  </p>
+</footer>

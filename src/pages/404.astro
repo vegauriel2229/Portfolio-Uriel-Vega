@@ -1,43 +1,69 @@
 ---
+import SiteFooter from "@/components/SiteFooter.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getContent } from "@/lib/content";
-import { LOCALES, fillTemplate, localize } from "@/lib/i18n";
+import { LOCALES, localize } from "@/lib/i18n";
 import { buildNotFoundHead } from "@/lib/seo";
 
 // One page for both languages: a missing URL has no active language (D-090).
+// No WhatsApp button and no section navigation (D-109).
 const content = await getContent();
 const { ui } = content;
 const head = buildNotFoundHead(content);
-const year = String(new Date().getFullYear());
 ---
 
-<BaseLayout lang="es" head={head} skipLinkLabel={localize(ui.skipLink, "es")}>
-  <a slot="header" href="/es" aria-label={localize(ui.home.logoLabel, "es")}>
-    UV
-  </a>
+<BaseLayout
+  lang="es"
+  head={head}
+  skipLinkLabel={localize(ui.skipLink, "es")}
+  tone="dark"
+>
+  <header
+    slot="header"
+    data-tone="dark"
+    class="border-t-4 border-accent bg-bg text-text"
+  >
+    <div class="wrap flex min-h-15 items-center py-1">
+      <a
+        href="/es"
+        aria-label={localize(ui.home.logoLabel, "es")}
+        class="inline-flex size-(--size-touch) items-center justify-center rounded-full border-[1.5px] border-mark font-display text-label font-semibold text-mark hover:border-text hover:text-text"
+      >
+        UV
+      </a>
+    </div>
+  </header>
 
-  <div data-tone="dark" class="bg-bg text-text">
-    <div class="mx-auto max-w-(--size-container) px-(--space-gutter) py-(--space-section)">
-      <h1 class="text-h2">
-        {LOCALES.map((locale) => (
-          <span lang={locale} class="block">
-            {localize(ui.notFound.title, locale)}
-          </span>
-        ))}
-      </h1>
+  <div class="wrap py-(--space-section)">
+    <p aria-hidden="true" class="font-display text-display text-surface">
+      404
+    </p>
+    <h1 class="text-h2">
       {LOCALES.map((locale) => (
-        <div lang={locale}>
-          <p>{localize(ui.notFound.body, locale)}</p>
-          <a href={`/${locale}`}>{localize(ui.notFound.back, locale)}</a>
+        <span lang={locale} class="block">
+          {localize(ui.notFound.title, locale)}
+        </span>
+      ))}
+    </h1>
+    <div class="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-0">
+      {LOCALES.map((locale) => (
+        <div
+          lang={locale}
+          class="lg:first:border-r lg:first:border-hair lg:first:pr-12 lg:last:pl-12"
+        >
+          <p class="max-w-[40ch] text-lead">
+            {localize(ui.notFound.body, locale)}
+          </p>
+          <a
+            href={`/${locale}`}
+            class="press mt-5 inline-flex min-h-13 items-center rounded-full bg-accent px-7 text-label font-bold text-on-accent hover:bg-accent-hover"
+          >
+            {localize(ui.notFound.back, locale)}
+          </a>
         </div>
       ))}
     </div>
   </div>
 
-  <p
-    slot="footer"
-    class="mx-auto max-w-(--size-container) px-(--space-gutter) py-8 text-small"
-  >
-    {fillTemplate(localize(ui.footer.rights, "es"), { year })}
-  </p>
+  <SiteFooter slot="footer" locale="es" ui={ui} reserveWhatsApp={false} />
 </BaseLayout>
