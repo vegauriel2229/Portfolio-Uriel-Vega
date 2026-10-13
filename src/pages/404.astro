@@ -16,54 +16,63 @@ const head = buildNotFoundHead(content);
   lang="es"
   head={head}
   skipLinkLabel={localize(ui.skipLink, "es")}
-  tone="dark"
+  tone="deep"
 >
   <header
     slot="header"
-    data-tone="dark"
-    class="border-t-4 border-accent bg-bg text-text"
+    data-tone="deep"
+    class="border-b border-hair bg-bg-deep text-text"
   >
-    <div class="wrap flex min-h-15 items-center py-1">
+    <div class="wrap flex min-h-(--size-header) items-center">
       <a
         href="/es"
         aria-label={localize(ui.home.logoLabel, "es")}
-        class="inline-flex size-(--size-touch) items-center justify-center rounded-full border-[1.5px] border-mark font-display text-label font-semibold text-mark hover:border-text hover:text-text"
+        class="inline-flex size-(--size-touch) items-center justify-center rounded-full border-[1.5px] border-accent font-display text-label font-semibold text-accent hover:border-text hover:text-text"
       >
         UV
       </a>
     </div>
   </header>
 
-  <div class="wrap py-(--space-section)">
-    <p aria-hidden="true" class="font-display text-display text-surface">
-      404
-    </p>
-    <h1 class="text-h2">
-      {LOCALES.map((locale) => (
-        <span lang={locale} class="block">
-          {localize(ui.notFound.title, locale)}
-        </span>
-      ))}
-    </h1>
-    <div class="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-0">
-      {LOCALES.map((locale) => (
-        <div
-          lang={locale}
-          class="lg:first:border-r lg:first:border-hair lg:first:pr-12 lg:last:pl-12"
-        >
-          <p class="max-w-[40ch] text-lead">
-            {localize(ui.notFound.body, locale)}
-          </p>
-          <a
-            href={`/${locale}`}
-            class="press mt-5 inline-flex min-h-13 items-center rounded-full bg-accent px-7 text-label font-bold text-on-accent hover:bg-accent-hover"
+  <div data-tone="deep" class="bg-bg">
+    <div class="wrap py-(--space-section)">
+      <p aria-hidden="true" class="mb-2 font-display text-display text-surface">
+        404
+      </p>
+      <h1 class="text-h2 text-balance">
+        {LOCALES.map((locale) => (
+          <span lang={locale} class="block">
+            {localize(ui.notFound.title, locale)}
+          </span>
+        ))}
+      </h1>
+      <div class="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-0">
+        {LOCALES.map((locale) => (
+          <div
+            lang={locale}
+            class="lg:first:border-r lg:first:border-hair lg:first:pr-12 lg:last:pl-12"
           >
-            {localize(ui.notFound.back, locale)}
-          </a>
-        </div>
-      ))}
+            <p class="max-w-[40ch] text-lead">
+              {localize(ui.notFound.body, locale)}
+            </p>
+            <a
+              href={`/${locale}`}
+              class="mt-5 inline-flex min-h-13 items-center rounded-full bg-action px-7 text-label font-bold text-on-action hover:bg-action-hover active:translate-y-px"
+            >
+              {localize(ui.notFound.back, locale)}
+            </a>
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 
   <SiteFooter slot="footer" locale="es" ui={ui} reserveWhatsApp={false} />
 </BaseLayout>
+
+<!-- The 404 has no animation (R23.13): it opts out of the page-to-page fade of the other pages. -->
+<style is:global>
+  @view-transition {
+    navigation: none;
+  }
+</style>

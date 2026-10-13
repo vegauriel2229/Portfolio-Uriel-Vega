@@ -1,6 +1,8 @@
 // Progressive enhancement (design sections 5.4 and 6.13). The site is complete without this file.
 // No cookies, no storage, no network (R17.7).
 
+import { initMotion } from "@/scripts/motion";
+
 const SECTION_IDS = [
   "home",
   "projects",
@@ -82,5 +84,6 @@ function enhanceLanguageSwitch(): void {
 }
 
 enhanceMenu();
+initMotion();
 enhanceTimeline();
 enhanceLanguageSwitch();

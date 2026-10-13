@@ -8,11 +8,11 @@ interface Props {
   lang: Locale;
   head: PageHead;
   skipLinkLabel: string;
-  /** Tone of the page background; sections set their own (D-106). */
-  tone?: "light" | "dark";
+  /** Tone of the page background; sections set their own (D-135a). */
+  tone?: "deep" | "base";
 }
 
-const { lang, head, skipLinkLabel, tone = "light" } = Astro.props;
+const { lang, head, skipLinkLabel, tone = "base" } = Astro.props;
 ---
 
 <!doctype html>
@@ -51,7 +51,7 @@ const { lang, head, skipLinkLabel, tone = "light" } = Astro.props;
   <body data-tone={tone} class="flex min-h-svh flex-col bg-bg text-text">
     <a
       href="#main"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:inline-flex focus:min-h-(--size-touch) focus:items-center focus:border focus:border-line focus:bg-surface focus:px-4 focus:font-bold focus:text-text"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-100 focus:inline-flex focus:min-h-(--size-touch) focus:items-center focus:border focus:border-line focus:bg-surface focus:px-4 focus:font-bold focus:text-text"
     >
       {skipLinkLabel}
     </a>

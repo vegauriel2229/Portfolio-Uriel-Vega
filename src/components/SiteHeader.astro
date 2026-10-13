@@ -22,24 +22,27 @@ const items = [
 ---
 
 <header
-  data-tone="dark"
-  class="sticky top-0 z-40 border-t-4 border-accent bg-bg text-text [@media(max-height:30rem)]:static"
+  data-tone="deep"
+  class="sticky top-0 z-50 border-b border-hair bg-bg-deep text-text [@media(max-height:30rem)]:static"
 >
-  <div class="wrap flex min-h-15 items-center gap-3 py-1">
+  <div class="wrap flex min-h-(--size-header) items-center gap-2 lg:gap-3">
     <a
       href="#home"
       aria-label={localize(ui.home.logoLabel, locale)}
-      class="inline-flex size-(--size-touch) shrink-0 items-center justify-center rounded-full border-[1.5px] border-mark font-display text-label font-semibold text-mark hover:border-text hover:text-text"
+      class="tap tap-lift inline-flex size-(--size-touch) shrink-0 items-center justify-center rounded-full border-[1.5px] border-accent font-display text-label font-semibold text-accent hover:border-text hover:text-text"
     >
       UV
     </a>
-    <nav aria-label={localize(ui.nav.label, locale)} class="ml-auto lg:mx-auto">
+    <nav
+      aria-label={localize(ui.nav.label, locale)}
+      class="order-last lg:order-none lg:mx-auto"
+    >
       <ul class="hidden items-center gap-6 lg:flex">
         {items.map(({ id, label }) => (
           <li>
             <a
               href={`#${id}`}
-              class="inline-flex min-h-(--size-touch) items-center text-label font-bold underline-offset-[.3em] hover:underline hover:decoration-2 hover:decoration-mark active:text-link-hover"
+              class="navlink inline-flex min-h-(--size-touch) items-center text-label font-bold"
             >
               {localize(label, locale)}
             </a>
@@ -47,16 +50,16 @@ const items = [
         ))}
       </ul>
       <details data-menu class="lg:hidden">
-        <summary class="inline-flex min-h-(--size-touch) cursor-pointer list-none items-center gap-2 rounded-full border border-line px-4 text-label font-bold hover:border-text [&::-webkit-details-marker]:hidden">
+        <summary class="tap tap-lift inline-flex min-h-(--size-touch) cursor-pointer list-none items-center gap-2 rounded-full border border-line px-4 text-label font-bold hover:border-text [&::-webkit-details-marker]:hidden">
           <MenuIcon class="size-5" />
           {localize(ui.nav.menu, locale)}
         </summary>
-        <ul class="absolute inset-x-0 top-full bg-surface">
+        <ul class="absolute inset-x-0 top-full border-b border-hair bg-surface">
           {items.map(({ id, label }) => (
-            <li class="border-b border-hair">
+            <li class="border-b border-hair last:border-b-0">
               <a
                 href={`#${id}`}
-                class="wrap flex min-h-12 items-center text-label font-bold hover:text-link hover:underline active:text-link-hover"
+                class="wrap flex min-h-12 items-center text-label font-bold hover:text-accent hover:underline hover:decoration-2 hover:underline-offset-4 active:text-accent"
               >
                 {localize(label, locale)}
               </a>
@@ -65,6 +68,9 @@ const items = [
         </ul>
       </details>
     </nav>
-    <LanguageSwitcher locale={locale} ui={ui} />
+    {/* The mascot button goes here, next to the ES/EN group and outside it (T9, design section 6.5.1). */}
+    <div class="ml-auto lg:ml-0">
+      <LanguageSwitcher locale={locale} ui={ui} />
+    </div>
   </div>
 </header>

@@ -32,7 +32,7 @@ const links = project.links.filter((link) => link.publishable);
       <dd class="flex items-center gap-2 font-bold">
         <span
           aria-hidden="true"
-          class="size-2.5 shrink-0 rounded-full bg-mark"
+          class="size-2.5 shrink-0 rounded-full bg-signal"
         ></span>
         {localize(project.status, locale)}
       </dd>
@@ -52,7 +52,7 @@ const links = project.links.filter((link) => link.publishable);
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            class="press inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-link px-5 text-label font-bold text-link hover:bg-link hover:text-bg"
+            class="tap inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-accent px-5 text-label font-bold text-accent hover:bg-accent hover:text-bg-deep"
           >
             {localize(link.label, locale)}
             <ExternalLinkIcon class="size-5 shrink-0" />

@@ -2,7 +2,9 @@
 import type { Content } from "@/lib/content";
 import { getCv } from "@/lib/cv";
 import { localize, type Locale } from "@/lib/i18n";
+import ArrowIcon from "@/components/icons/ArrowIcon.astro";
 import DownloadIcon from "@/components/icons/DownloadIcon.astro";
+import Staff from "@/components/Staff.astro";
 
 interface Props {
   locale: Locale;
@@ -19,36 +21,59 @@ const facts = [
   { label: ui.hiring.workMode, value: profile.hiring.workMode },
   { label: ui.hiring.seeking, value: profile.hiring.seeking },
 ];
+
+// The greeting already contains the name ("Hola, soy Uriel Vega"): the h1 shows it in two masked lines
+// (design section 6.5.2). If the greeting does not end with the name, it stays on one line.
+const greeting = localize(profile.hero.greeting, locale);
+const name = profile.identity.name;
+const lines = greeting.endsWith(name)
+  ? [greeting.slice(0, -name.length).trim(), name].filter(Boolean)
+  : [greeting];
 ---
 
 <section
   id="home"
-  data-tone="dark"
+  data-tone="deep"
   aria-labelledby="home-title"
-  class="bg-bg text-text"
+  class="relative overflow-clip bg-bg text-text"
 >
-  <div class="wrap grid gap-10 py-(--space-section) lg:grid-cols-[7fr_4fr] lg:items-center lg:gap-16">
+  <div class="wrap grid gap-9 pt-12 pb-32 lg:grid-cols-[7fr_4fr] lg:items-center lg:gap-16 lg:pt-20 lg:pb-36">
     <div>
-      <h1 id="home-title" class="text-display">
-        {localize(profile.hero.greeting, locale)}
+      <h1 id="home-title" class="text-display text-balance">
+        {lines.map((line, index) => (
+          <>
+            {index > 0 && " "}
+            <span class="hero-line mask" data-k={index}>
+              <span>{line}</span>
+            </span>
+          </>
+        ))}
       </h1>
-      <p class="mt-5 max-w-[40ch] text-lead">
+      <p class="hero-fx mt-5 max-w-[40ch] text-lead" data-k="0">
         {localize(profile.identity.role, locale)}
       </p>
-      <div class="mt-7 flex flex-col items-start gap-3">
+      <div
+        class="hero-fx mt-7 flex flex-col items-start gap-2 lg:flex-row lg:items-center lg:gap-x-6"
+        data-k="1"
+      >
         <a
           href="#projects"
-          class="press inline-flex min-h-13 items-center rounded-full bg-accent px-7 text-label font-bold text-on-accent hover:bg-accent-hover"
+          class="tap group inline-flex min-h-13 items-center gap-2 rounded-full bg-action px-7 text-label font-bold text-on-action hover:bg-action-hover"
         >
           {localize(profile.hero.ctaLabel, locale)}
+          <span class="nudge-x inline-flex">
+            <ArrowIcon class="size-5" />
+          </span>
         </a>
         {cv && (
           <a
             href={cv.href}
             download={cv.downloadName}
-            class="inline-flex min-h-(--size-touch) items-center gap-2 text-label font-bold underline decoration-line decoration-2 underline-offset-4 hover:decoration-mark active:text-link-hover"
+            class="group inline-flex min-h-(--size-touch) items-center gap-2 text-label font-bold underline decoration-line decoration-2 underline-offset-[.35em] hover:decoration-signal active:text-accent"
           >
-            <DownloadIcon class="size-5" />
+            <span class="nudge-y inline-flex">
+              <DownloadIcon class="size-5" />
+            </span>
             {cv.label}
           </a>
         )}
@@ -56,14 +81,15 @@ const facts = [
     </div>
     <aside
       aria-labelledby="hiring-home-title"
-      class="rounded-lg bg-accent p-(--space-card) text-on-accent"
+      class="hero-fx rounded-lg bg-action p-(--space-card) text-on-action"
+      data-k="2"
     >
       <h2 id="hiring-home-title" class="sr-only">
         {localize(ui.hiring.heading, locale)}
       </h2>
       <dl>
         {facts.map(({ label, value }) => (
-          <div class="border-t border-on-accent/45 py-3 first:border-t-0 first:pt-0 last:pb-0">
+          <div class="border-t border-on-action/38 py-3 first:border-t-0 first:pt-0 last:pb-0">
             <dt class="text-small">{localize(label, locale)}</dt>
             <dd class="font-bold">{localize(value, locale)}</dd>
           </div>
@@ -71,4 +97,5 @@ const facts = [
       </dl>
     </aside>
   </div>
+  <Staff />
 </section>

@@ -1,0 +1,19 @@
+---
+// Decorative staff of the home, the "Orquesta" motif (design section 6.5.2).
+// The positions of the notes live in global.css (the CSP forbids inline styles).
+const LINES = 5;
+const NOTES = 9;
+---
+
+<div class="staff" aria-hidden="true">
+  <div class="staff-lines">
+    {Array.from({ length: LINES }, () => (
+      <i />
+    ))}
+  </div>
+  <div class="staff-notes">
+    {Array.from({ length: NOTES }, () => (
+      <b />
+    ))}
+  </div>
+</div>

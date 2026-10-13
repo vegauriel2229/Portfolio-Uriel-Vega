@@ -24,7 +24,7 @@ const { locale, ui } = Astro.props;
       aria-current={target === locale ? "true" : undefined}
       data-lang-link
       class:list={[
-        "inline-flex size-(--size-touch) items-center justify-center rounded-full text-label font-bold hover:text-text",
+        "tap tap-lift inline-flex size-(--size-touch) items-center justify-center rounded-full text-label font-bold hover:text-text",
         target === locale ? "border border-line text-text" : "text-muted",
       ]}
     >

@@ -1,34 +1,45 @@
 @import "tailwindcss";
 
 /*
- * Design tokens (design section 6.2). Components use only the semantic colors
- * (bg, surface, text...), never the raw palette (R12.2).
+ * Design tokens (design section 6.2, palette B "Berenjena y lavanda", D-133).
+ * Components use only the semantic colors (bg, surface, text, accent...), never the raw palette (R12.2).
  */
 
 /* Raw palette, tokens and scales. `static` emits every variable even if no utility uses it yet. */
 @theme static {
   --color-*: initial;
-  --color-navy-900: #0d2b5e;
-  --color-navy-700: #153a78;
-  --color-navy-600: #2d5393;
-  --color-sky-300: #7e9fd6;
-  --color-sky-200: #9cc4ff;
-  --color-sky-100: #b8c8e6;
-  --color-sky-50: #d3e5ff;
-  --color-ice-50: #f4f7fc;
-  --color-rose-300: #ff9aa5;
-  --color-scarlet-500: #e0283d;
-  --color-scarlet-600: #c91f36;
-  --color-mist-50: #f5f7fb;
-  --color-mist-200: #d5dce8;
+
+  /* Raw palette */
+  --color-aubergine-950: #0e0618;
+  --color-aubergine-900: #150a24;
+  --color-aubergine-800: #221238;
+  --color-aubergine-700: #3a2260;
+  --color-aubergine-600: #4a2d75;
+  --color-mist-50: #f7f1ff;
+  --color-lilac-200: #cdbbe8;
+  --color-violet-500: #7b3fe4;
+  --color-violet-600: #6a2fd0;
+  --color-lavender-300: #cdb4ff;
+  --color-cyan-300: #4fe0ec;
+  --color-cyan-950: #041418;
+  --color-orchid-400: #9475cc;
   --color-white: #ffffff;
-  --color-slate-400: #7a8ca8;
-  --color-slate-600: #44546f;
-  --color-ink-900: #0d1b38;
-  --color-crimson-600: #c21f35;
-  --color-crimson-800: #9f1a2c;
-  --color-blue-700: #1d4ed8;
-  --color-blue-800: #1a3fb0;
+
+  /* Semantic colors with a fixed value. `bg` depends on the tone and is defined below. */
+  --color-bg-deep: var(--color-aubergine-950);
+  --color-surface: var(--color-aubergine-800);
+  --color-text: var(--color-mist-50);
+  --color-muted: var(--color-lilac-200);
+  --color-accent: var(--color-lavender-300);
+  --color-action: var(--color-violet-500);
+  --color-action-hover: var(--color-violet-600);
+  --color-on-action: var(--color-white);
+  --color-signal: var(--color-cyan-300);
+  --color-on-signal: var(--color-cyan-950);
+  --color-line: var(--color-orchid-400);
+  --color-hair: var(--color-aubergine-700);
+  --color-dim: var(--color-aubergine-600);
+  --color-focus: var(--color-cyan-300);
 
   /* Mobile first: 360 px is the base, there is no `sm` breakpoint. */
   --breakpoint-*: initial;
@@ -52,6 +63,8 @@
   --text-h3-lg--line-height: 1.1;
   --text-h3: 1.6rem;
   --text-h3--line-height: 1.15;
+  --text-step: clamp(1.3rem, 3vw, 1.75rem);
+  --text-step--line-height: 1.25;
   --text-h4: 1.3rem;
   --text-h4--line-height: 1.3;
   --text-h4-sm: 1.2rem;
@@ -73,76 +86,79 @@
   --space-stack-md: 1.25rem;
   --space-stack-lg: 2rem;
   --size-container: 75rem;
+  --size-header: 4rem;
   --size-touch: 2.75rem;
 
-  /* Three radii, each with its own role. */
+  /* Four radii, each with its own role. */
   --radius-*: initial;
   --radius-sm: 4px;
+  --radius-md: 12px;
   --radius-lg: 18px;
   --radius-full: 9999px;
 
   /* No elevation shadows: only the rings of the WhatsApp button. */
   --shadow-*: initial;
-  --shadow-wa: 0 0 0 3px var(--color-white);
+  --shadow-wa: 0 0 0 3px var(--color-aubergine-950);
   --shadow-wa-focus:
-    0 0 0 3px var(--color-white), 0 0 0 6px var(--color-ink-900),
-    0 0 0 9px var(--color-white);
+    0 0 0 3px var(--color-aubergine-950), 0 0 0 6px var(--color-cyan-300);
 
+  /* Motion (design section 6.2.6): durations, staggers, curves. */
   --duration-press: 120ms;
+  --duration-ui: 200ms;
+  --duration-draw: 700ms;
+  --duration-note: 520ms;
+  --duration-meter: 420ms;
   --duration-progress: 450ms;
-  --ease-standard: ease;
+  --duration-reveal: 600ms;
+  --duration-chip: 650ms;
+  --duration-hero: 800ms;
+  --stagger-step: 90ms;
+  --stagger-hero: 110ms;
+  --stagger-reveal: 120ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: linear(
+    0,
+    0.132,
+    0.41,
+    0.698,
+    0.923,
+    1.061,
+    1.12,
+    1.122,
+    1.094,
+    1.057,
+    1.023,
+    1,
+    0.988,
+    0.984,
+    0.986,
+    0.99,
+    0.995,
+    0.999,
+    1.001,
+    1.002,
+    1.002,
+    1.002,
+    1.001,
+    1,
+    1
+  );
+  --timeline-step-length: 45svh;
 }
 
-/* Semantic colors read the variable of the tone set on the section (data-tone). */
+/* The page background reads the variable of the tone set on the section (data-tone, D-135a). */
 @theme inline {
   --color-bg: var(--tone-bg);
-  --color-surface: var(--tone-surface);
-  --color-text: var(--tone-text);
-  --color-muted: var(--tone-muted);
-  --color-line: var(--tone-line);
-  --color-hair: var(--tone-hair);
-  --color-accent: var(--tone-accent);
-  --color-accent-hover: var(--tone-accent-hover);
-  --color-on-accent: var(--tone-on-accent);
-  --color-link: var(--tone-link);
-  --color-link-hover: var(--tone-link-hover);
-  --color-mark: var(--tone-mark);
-  --color-focus: var(--tone-focus);
 }
 
 @layer base {
-  /* Dark zone */
-  [data-tone="dark"] {
-    --tone-bg: var(--color-navy-900);
-    --tone-surface: var(--color-navy-700);
-    --tone-text: var(--color-ice-50);
-    --tone-muted: var(--color-sky-100);
-    --tone-line: var(--color-sky-300);
-    --tone-hair: var(--color-navy-600);
-    --tone-accent: var(--color-scarlet-500);
-    --tone-accent-hover: var(--color-scarlet-600);
-    --tone-on-accent: var(--color-white);
-    --tone-link: var(--color-sky-200);
-    --tone-link-hover: var(--color-sky-50);
-    --tone-mark: var(--color-rose-300);
-    --tone-focus: var(--color-sky-200);
+  /* All the site is dark, in two steps of the same tint (design section 6.3). */
+  [data-tone="deep"] {
+    --tone-bg: var(--color-aubergine-950);
   }
-
-  /* Light zone */
-  [data-tone="light"] {
-    --tone-bg: var(--color-mist-50);
-    --tone-surface: var(--color-white);
-    --tone-text: var(--color-ink-900);
-    --tone-muted: var(--color-slate-600);
-    --tone-line: var(--color-slate-400);
-    --tone-hair: var(--color-mist-200);
-    --tone-accent: var(--color-crimson-600);
-    --tone-accent-hover: var(--color-crimson-800);
-    --tone-on-accent: var(--color-white);
-    --tone-link: var(--color-blue-700);
-    --tone-link-hover: var(--color-blue-800);
-    --tone-mark: var(--color-crimson-600);
-    --tone-focus: var(--color-blue-700);
+  [data-tone="base"] {
+    --tone-bg: var(--color-aubergine-900);
   }
 
   /* Section and card padding grow with the viewport (design section 6.2.3). */
@@ -164,10 +180,11 @@
     }
   }
 
-  /* Fixed header (about 68 px) and floating WhatsApp button must never cover a focused element. */
+  /* Sticky header (about 65 px) and floating WhatsApp button must never cover a focused element. */
   html {
     scroll-padding-top: 5rem;
     scroll-padding-bottom: 6.5rem;
+    background-color: var(--color-aubergine-950);
   }
 
   body {
@@ -175,7 +192,7 @@
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
     background-color: var(--tone-bg);
-    color: var(--tone-text);
+    color: var(--color-text);
   }
 
   h1,
@@ -187,20 +204,8 @@
   }
 
   :focus-visible {
-    outline: 3px solid var(--tone-focus);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
-  }
-}
-
-/*
- * Motion (D-100, R12.7, R12.8). Transitions use only transform and opacity, and they are defined
- * only when the visitor has no motion preference. Components write `transition: var(--motion-press, none)`:
- * without the variable (reduced motion) the declaration is invalid and there is no transition.
- */
-@media (prefers-reduced-motion: no-preference) {
-  :root {
-    --motion-press: transform var(--duration-press) var(--ease-standard);
-    --motion-progress: transform var(--duration-progress) var(--ease-standard);
   }
 }
 
@@ -212,19 +217,352 @@
   padding-inline: var(--space-gutter);
 }
 
+/*
+ * Motion (R12.7, R12.8, R23). Only `transform` and `opacity`, never `all`, nothing infinite.
+ * Every transition and animation lives inside `prefers-reduced-motion: no-preference`:
+ * with reduced motion everything is in its final state and changes are instant.
+ */
 @layer components {
-  /* Press feedback for buttons: 1 px down, only with a motion-friendly visitor (R12.7, R12.8). */
-  .press {
-    transition: var(--motion-press, none);
+  /* Response to touch and cursor (design section 6.9, row 3). Hover only on devices that hover. */
+  @media (hover: hover) {
+    .tap-lift:hover {
+      transform: translateY(-2px);
+    }
+    .tap-zoom:hover {
+      transform: scale(1.06);
+    }
+    .group:hover .nudge-x,
+    .group:focus-visible .nudge-x {
+      transform: translateX(3px);
+    }
+    .group:hover .nudge-y,
+    .group:focus-visible .nudge-y {
+      transform: translateY(2px);
+    }
+    .group:hover .nudge-row,
+    .group:focus-visible .nudge-row {
+      transform: translateX(4px);
+    }
   }
-  .press:active {
+  .tap:active {
     transform: translateY(1px);
   }
 
+  /* Underline of the inline navigation: grows with scaleX from the left. */
+  .navlink {
+    position: relative;
+  }
+  .navlink::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0.45rem;
+    height: 2px;
+    background-color: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  @media (hover: hover) {
+    .navlink:hover::after {
+      transform: scaleX(1);
+    }
+  }
+  .navlink:active {
+    color: var(--color-accent);
+  }
+
+  /* Headings that rise from a mask (entry `rise`). Padding and negative margin cancel out: no layout change. */
+  .mask {
+    display: block;
+    overflow: clip;
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+  }
+  .mask > span {
+    display: block;
+  }
+
+  /* ---- Home: decorative staff (the "Orquesta" motif, design section 6.5.2) ---- */
+  .staff {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 2.25rem;
+    height: 48px;
+    pointer-events: none;
+  }
+  .staff-lines i {
+    position: absolute;
+    inset-inline: 0;
+    height: 1px;
+    background-color: var(--color-hair);
+    transform-origin: left;
+  }
+  .staff-lines i:nth-child(1) {
+    top: 0;
+  }
+  .staff-lines i:nth-child(2) {
+    top: 12px;
+  }
+  .staff-lines i:nth-child(3) {
+    top: 24px;
+  }
+  .staff-lines i:nth-child(4) {
+    top: 36px;
+  }
+  .staff-lines i:nth-child(5) {
+    top: 48px;
+  }
+  .staff-notes b {
+    position: absolute;
+    width: 13px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--color-accent);
+    transform: rotate(-22deg);
+  }
+  .staff-notes b::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 4px;
+    width: 2px;
+    height: 34px;
+    background-color: inherit;
+    transform: rotate(22deg);
+    transform-origin: bottom right;
+  }
+  /* Position of each note: left in % and top in px (no inline styles: the CSP forbids them). */
+  .staff-notes b:nth-child(1) {
+    left: 8%;
+    top: 31px;
+  }
+  .staff-notes b:nth-child(2) {
+    left: 13%;
+    top: 19px;
+  }
+  .staff-notes b:nth-child(3) {
+    left: 18%;
+    top: 25px;
+  }
+  .staff-notes b:nth-child(4) {
+    left: 57%;
+    top: 7px;
+  }
+  .staff-notes b:nth-child(5) {
+    left: 62%;
+    top: 19px;
+  }
+  .staff-notes b:nth-child(6) {
+    left: 68%;
+    top: 13px;
+  }
+  .staff-notes b:nth-child(7) {
+    left: 74%;
+    top: 31px;
+  }
+  .staff-notes b:nth-child(8) {
+    left: 79%;
+    top: 25px;
+  }
+  .staff-notes b:nth-child(9) {
+    left: 85%;
+    top: 1px;
+  }
+  /* 6 notes up to 640 px. */
+  @media (width <= 640px) {
+    .staff-notes b:nth-child(-n + 3) {
+      display: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Language change keeps the page continuous (design section 6.9, row 8). Only browsers that support it. */
+  @view-transition {
+    navigation: auto;
+  }
+  ::view-transition-group(root) {
+    animation-duration: var(--duration-ui);
+  }
+
+  .tap,
+  .tap-lift,
+  .tap-zoom,
+  .nudge-x,
+  .nudge-y,
+  .nudge-row {
+    transition: transform var(--duration-ui) var(--ease-out);
+  }
+  .tap:active {
+    transition-duration: var(--duration-press);
+  }
+  .navlink::after {
+    transition: transform var(--duration-ui) var(--ease-out);
+  }
+
   /*
-   * AI timeline (design section 6.6). Without JavaScript every step reads the same and the line is complete.
-   * With JavaScript (class `js`) enhance.ts marks the step in view (data-active) and the ones before it (data-done).
+   * 1) Load sequence of the home: pure CSS, no JavaScript (R23.6). If the script fails, it still ends in
+   * the final state. The h1 never starts with opacity 0, so the LCP is not delayed: it only rises from
+   * translateY(55%) inside its mask. Secondary elements do fade in.
    */
+  .hero-line > span {
+    animation: hero-rise var(--duration-hero) var(--ease-out) both;
+  }
+  .hero-line[data-k="0"] > span {
+    animation-delay: 300ms;
+  }
+  .hero-line[data-k="1"] > span {
+    animation-delay: calc(300ms + var(--stagger-hero));
+  }
+  .hero-fx {
+    animation: fade var(--duration-reveal) var(--ease-out) both;
+  }
+  .hero-fx[data-k="0"] {
+    animation-delay: 800ms;
+  }
+  .hero-fx[data-k="1"] {
+    animation-delay: calc(800ms + var(--stagger-reveal));
+  }
+  .hero-fx[data-k="2"] {
+    animation-delay: calc(800ms + 2 * var(--stagger-reveal));
+  }
+  .staff-lines i {
+    animation: draw var(--duration-draw) var(--ease-out) both;
+  }
+  .staff-lines i:nth-child(2) {
+    animation-delay: var(--stagger-step);
+  }
+  .staff-lines i:nth-child(3) {
+    animation-delay: calc(2 * var(--stagger-step));
+  }
+  .staff-lines i:nth-child(4) {
+    animation-delay: calc(3 * var(--stagger-step));
+  }
+  .staff-lines i:nth-child(5) {
+    animation-delay: calc(4 * var(--stagger-step));
+  }
+  .staff-notes b {
+    animation: notepop var(--duration-note) var(--ease-spring) both;
+  }
+  .staff-notes b:nth-child(1) {
+    animation-delay: 1000ms;
+  }
+  .staff-notes b:nth-child(2) {
+    animation-delay: calc(1000ms + var(--stagger-step));
+  }
+  .staff-notes b:nth-child(3) {
+    animation-delay: calc(1000ms + 2 * var(--stagger-step));
+  }
+  .staff-notes b:nth-child(4) {
+    animation-delay: calc(1000ms + 3 * var(--stagger-step));
+  }
+  .staff-notes b:nth-child(5) {
+    animation-delay: calc(1000ms + 4 * var(--stagger-step));
+  }
+  .staff-notes b:nth-child(6) {
+    animation-delay: calc(1000ms + 5 * var(--stagger-step));
+  }
+  .staff-notes b:nth-child(7) {
+    animation-delay: calc(1000ms + 6 * var(--stagger-step));
+  }
+  .staff-notes b:nth-child(8) {
+    animation-delay: calc(1000ms + 7 * var(--stagger-step));
+  }
+  .staff-notes b:nth-child(9) {
+    animation-delay: calc(1000ms + 8 * var(--stagger-step));
+  }
+
+  @keyframes draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes hero-rise {
+    from {
+      transform: translateY(55%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes notepop {
+    from {
+      opacity: 0;
+      transform: rotate(-22deg) scale(0.2);
+    }
+    to {
+      opacity: 1;
+      transform: rotate(-22deg) scale(1);
+    }
+  }
+
+  /*
+   * 2) Reveals below the first screen (design section 5.5, technique 2). The hidden start state only exists
+   * under [data-motion], which motion.ts sets after checking JS and motion preference. Without it all is visible.
+   */
+  [data-motion] [data-reveal] {
+    transition:
+      opacity var(--duration-reveal) var(--ease-out),
+      transform var(--duration-reveal) var(--ease-out);
+  }
+  [data-motion] [data-reveal="fade"]:not([data-revealed]) {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  [data-motion] [data-reveal="rise"] > span {
+    transition: transform var(--duration-hero) var(--ease-out);
+  }
+  [data-motion] [data-reveal="rise"]:not([data-revealed]) > span {
+    transform: translateY(105%);
+  }
+  /* Delay between siblings of the same group (the CSP forbids style="--i:3"). */
+  [data-motion] [data-reveal-group] > :nth-child(2) {
+    transition-delay: var(--stagger-reveal);
+  }
+  [data-motion] [data-reveal-group] > :nth-child(3) {
+    transition-delay: calc(2 * var(--stagger-reveal));
+  }
+  [data-motion] [data-reveal-group] > :nth-child(4) {
+    transition-delay: calc(3 * var(--stagger-reveal));
+  }
+  [data-motion] [data-reveal-group] > :nth-child(5) {
+    transition-delay: calc(4 * var(--stagger-reveal));
+  }
+  [data-motion] [data-reveal-group] > :nth-child(6) {
+    transition-delay: calc(5 * var(--stagger-reveal));
+  }
+}
+
+@media print {
+  [data-reveal],
+  [data-reveal] > span {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/*
+ * AI timeline (kept from the base UI until T7 rebuilds it). Without JavaScript every step reads the same
+ * and the line is complete. With JavaScript (class `js`) enhance.ts marks the step in view (data-active).
+ */
+@layer components {
   .timeline > li {
     position: relative;
     padding-left: 2.5rem;
@@ -243,13 +581,12 @@
     width: 2px;
   }
   .timeline > li::before {
-    background: var(--tone-line);
+    background: var(--color-line);
   }
   .timeline > li::after {
-    background: var(--tone-mark);
+    background: var(--color-signal);
     transform: scaleY(0);
     transform-origin: top;
-    transition: var(--motion-progress, none);
   }
   .timeline > li:last-child::before,
   .timeline > li:last-child::after {
@@ -262,22 +599,28 @@
     width: 18px;
     height: 18px;
     border-radius: var(--radius-full);
-    border: 2px solid var(--tone-mark);
-    background: var(--tone-surface);
+    border: 2px solid var(--color-signal);
+    background: var(--color-surface);
   }
   .timeline.js > li:not([data-active]) {
-    color: var(--tone-muted);
+    color: var(--color-muted);
   }
   .timeline.js > li[data-active] h4 {
     font-size: var(--text-h4-active);
   }
   .timeline.js > li[data-active] .timeline-dot {
-    background: var(--tone-mark);
+    background: var(--color-signal);
     box-shadow:
-      0 0 0 4px var(--tone-surface),
-      0 0 0 6px var(--tone-mark);
+      0 0 0 4px var(--color-surface),
+      0 0 0 6px var(--color-signal);
   }
   .timeline.js > li[data-done]::after {
     transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .timeline > li::after {
+    transition: transform var(--duration-progress) var(--ease-io);
   }
 }
