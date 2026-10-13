@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens (design section 6.2). Components use only the semantic colors
+ * (bg, surface, text...), never the raw palette (R12.2).
+ */
+
+/* Raw palette, tokens and scales. `static` emits every variable even if no utility uses it yet. */
+@theme static {
+  --color-*: initial;
+  --color-navy-900: #0d2b5e;
+  --color-navy-700: #153a78;
+  --color-navy-600: #2d5393;
+  --color-sky-300: #7e9fd6;
+  --color-sky-200: #9cc4ff;
+  --color-sky-100: #b8c8e6;
+  --color-sky-50: #d3e5ff;
+  --color-ice-50: #f4f7fc;
+  --color-rose-300: #ff9aa5;
+  --color-scarlet-500: #e0283d;
+  --color-scarlet-600: #c91f36;
+  --color-mist-50: #f5f7fb;
+  --color-mist-200: #d5dce8;
+  --color-white: #ffffff;
+  --color-slate-400: #7a8ca8;
+  --color-slate-600: #44546f;
+  --color-ink-900: #0d1b38;
+  --color-crimson-600: #c21f35;
+  --color-crimson-800: #9f1a2c;
+  --color-blue-700: #1d4ed8;
+  --color-blue-800: #1a3fb0;
+
+  /* Mobile first: 360 px is the base, there is no `sm` breakpoint. */
+  --breakpoint-*: initial;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 90rem;
+
+  /* Two families at most (R12.3). The Astro Fonts API defines --font-literata and --font-atkinson. */
+  --font-*: initial;
+  --font-display: var(--font-literata);
+  --font-body: var(--font-atkinson);
+
+  --text-*: initial;
+  --text-display: clamp(2.75rem, 8.5vw, 6rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.015em;
+  --text-h2: clamp(2rem, 5vw, 3rem);
+  --text-h2--line-height: 1.1;
+  --text-h2--letter-spacing: -0.01em;
+  --text-h3-lg: 2.1rem;
+  --text-h3-lg--line-height: 1.1;
+  --text-h3: 1.6rem;
+  --text-h3--line-height: 1.15;
+  --text-h4: 1.3rem;
+  --text-h4--line-height: 1.3;
+  --text-h4-sm: 1.2rem;
+  --text-h4-sm--line-height: 1.3;
+  --text-h4-active: 1.45rem;
+  --text-h4-active--line-height: 1.3;
+  --text-lead: 1.2rem;
+  --text-lead--line-height: 1.4;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.6;
+  --text-small: 0.92rem;
+  --text-small--line-height: 1.5;
+  --text-label: 0.95rem;
+  --text-label--line-height: 1.4;
+
+  /* Spacing: Tailwind's default 4 px step plus named layout tokens. */
+  --space-gutter: 1.25rem;
+  --space-stack-sm: 0.75rem;
+  --space-stack-md: 1.25rem;
+  --space-stack-lg: 2rem;
+  --size-container: 75rem;
+  --size-touch: 2.75rem;
+
+  /* Three radii, each with its own role. */
+  --radius-*: initial;
+  --radius-sm: 4px;
+  --radius-lg: 18px;
+  --radius-full: 9999px;
+
+  /* No elevation shadows: only the rings of the WhatsApp button. */
+  --shadow-*: initial;
+  --shadow-wa: 0 0 0 3px var(--color-white);
+  --shadow-wa-focus:
+    0 0 0 3px var(--color-white), 0 0 0 6px var(--color-ink-900),
+    0 0 0 9px var(--color-white);
+
+  --duration-press: 120ms;
+  --duration-progress: 450ms;
+  --ease-standard: ease;
+}
+
+/* Semantic colors read the variable of the tone set on the section (data-tone). */
+@theme inline {
+  --color-bg: var(--tone-bg);
+  --color-surface: var(--tone-surface);
+  --color-text: var(--tone-text);
+  --color-muted: var(--tone-muted);
+  --color-line: var(--tone-line);
+  --color-hair: var(--tone-hair);
+  --color-accent: var(--tone-accent);
+  --color-accent-hover: var(--tone-accent-hover);
+  --color-on-accent: var(--tone-on-accent);
+  --color-link: var(--tone-link);
+  --color-link-hover: var(--tone-link-hover);
+  --color-mark: var(--tone-mark);
+  --color-focus: var(--tone-focus);
+}
+
+@layer base {
+  /* Dark zone */
+  [data-tone="dark"] {
+    --tone-bg: var(--color-navy-900);
+    --tone-surface: var(--color-navy-700);
+    --tone-text: var(--color-ice-50);
+    --tone-muted: var(--color-sky-100);
+    --tone-line: var(--color-sky-300);
+    --tone-hair: var(--color-navy-600);
+    --tone-accent: var(--color-scarlet-500);
+    --tone-accent-hover: var(--color-scarlet-600);
+    --tone-on-accent: var(--color-white);
+    --tone-link: var(--color-sky-200);
+    --tone-link-hover: var(--color-sky-50);
+    --tone-mark: var(--color-rose-300);
+    --tone-focus: var(--color-sky-200);
+  }
+
+  /* Light zone */
+  [data-tone="light"] {
+    --tone-bg: var(--color-mist-50);
+    --tone-surface: var(--color-white);
+    --tone-text: var(--color-ink-900);
+    --tone-muted: var(--color-slate-600);
+    --tone-line: var(--color-slate-400);
+    --tone-hair: var(--color-mist-200);
+    --tone-accent: var(--color-crimson-600);
+    --tone-accent-hover: var(--color-crimson-800);
+    --tone-on-accent: var(--color-white);
+    --tone-link: var(--color-blue-700);
+    --tone-link-hover: var(--color-blue-800);
+    --tone-mark: var(--color-crimson-600);
+    --tone-focus: var(--color-blue-700);
+  }
+
+  /* Section and card padding grow with the viewport (design section 6.2.3). */
+  :root {
+    --space-section: 3.5rem;
+    --space-card: 1.5rem;
+  }
+
+  @media (width >= theme(--breakpoint-md)) {
+    :root {
+      --space-section: 4.5rem;
+      --space-card: 2.25rem;
+    }
+  }
+
+  @media (width >= theme(--breakpoint-lg)) {
+    :root {
+      --space-section: 5rem;
+    }
+  }
+
+  /* Fixed header (about 68 px) and floating WhatsApp button must never cover a focused element. */
+  html {
+    scroll-padding-top: 5rem;
+    scroll-padding-bottom: 6.5rem;
+  }
+
+  body {
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    background-color: var(--tone-bg);
+    color: var(--tone-text);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 500;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--tone-focus);
+    outline-offset: 3px;
+  }
+}
+
+/*
+ * Motion (D-100, R12.7, R12.8). Transitions use only transform and opacity, and they are defined
+ * only when the visitor has no motion preference. Components write `transition: var(--motion-press, none)`:
+ * without the variable (reduced motion) the declaration is invalid and there is no transition.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    --motion-press: transform var(--duration-press) var(--ease-standard);
+    --motion-progress: transform var(--duration-progress) var(--ease-standard);
+  }
+}

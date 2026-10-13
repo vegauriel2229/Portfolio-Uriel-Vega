@@ -1,0 +1,108 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getContent } from "@/lib/content";
+import { LOCALES, fillTemplate, localize, type Locale } from "@/lib/i18n";
+import { buildPageHead } from "@/lib/seo";
+
+export async function getStaticPaths() {
+  // Runs the integrity guard first: a broken data file stops the build here (R1.2).
+  await getContent();
+  return LOCALES.map((locale) => ({ params: { locale } }));
+}
+
+const locale = Astro.params.locale as Locale;
+const content = await getContent();
+const { profile, ui } = content;
+const head = buildPageHead(content, locale);
+
+const menu = [
+  { id: "projects", label: ui.sections.projects },
+  { id: "current-work", label: ui.sections.currentWork },
+  { id: "about", label: ui.sections.about },
+  { id: "skills", label: ui.sections.skills },
+  { id: "contact", label: ui.sections.contact },
+];
+
+// Tone per section (D-106). Titles come from ui.sections (D-107); the home title is the h1.
+const sections = [
+  { id: "projects", tone: "light", title: ui.sections.projects },
+  { id: "current-work", tone: "light", title: ui.sections.currentWork },
+  { id: "about", tone: "dark", title: ui.sections.about },
+  { id: "skills", tone: "light", title: ui.sections.skills },
+  { id: "contact", tone: "dark", title: ui.sections.contact },
+] as const;
+
+const year = String(new Date().getFullYear());
+---
+
+<BaseLayout
+  lang={locale}
+  head={head}
+  skipLinkLabel={localize(ui.skipLink, locale)}
+>
+  <div
+    slot="header"
+    class="mx-auto max-w-(--size-container) px-(--space-gutter)"
+  >
+    <a href={`/${locale}`} aria-label={localize(ui.home.logoLabel, locale)}>
+      UV
+    </a>
+    <nav aria-label={localize(ui.nav.label, locale)}>
+      <ul>
+        {menu.map(({ id, label }) => (
+          <li>
+            <a href={`#${id}`}>{localize(label, locale)}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <div role="group" aria-label={localize(ui.lang.label, locale)}>
+      {LOCALES.map((target) => (
+        <a
+          href={`/${target}`}
+          lang={target}
+          hreflang={target}
+          aria-label={localize(ui.lang[target].name, locale)}
+          aria-current={target === locale ? "true" : undefined}
+        >
+          {target.toUpperCase()}
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <section
+    id="home"
+    data-tone="dark"
+    aria-labelledby="home-title"
+    class="bg-bg text-text"
+  >
+    <div class="mx-auto max-w-(--size-container) px-(--space-gutter) py-(--space-section)">
+      <h1 id="home-title" class="text-display">
+        {localize(profile.hero.greeting, locale)}
+      </h1>
+    </div>
+  </section>
+
+  {sections.map(({ id, tone, title }) => (
+    <section
+      id={id}
+      data-tone={tone}
+      aria-labelledby={`${id}-title`}
+      class="bg-bg text-text"
+    >
+      <div class="mx-auto max-w-(--size-container) px-(--space-gutter) py-(--space-section)">
+        <h2 id={`${id}-title`} class="text-h2">
+          {localize(title, locale)}
+        </h2>
+      </div>
+    </section>
+  ))}
+
+  <p
+    slot="footer"
+    class="mx-auto max-w-(--size-container) px-(--space-gutter) py-8 text-small"
+  >
+    {fillTemplate(localize(ui.footer.rights, locale), { year })}
+  </p>
+</BaseLayout>

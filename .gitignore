@@ -1,0 +1,16 @@
+# Team skills (installed per user)
+.claude/skills/
+# Local Claude files
+.claude/settings.local.json
+.claude/agent-memory/
+# Environment
+.env*
+!.env.example
+# Dependencies and builds
+node_modules/
+dist/
+.astro/
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,17 @@
+# Build output and generated files
+dist/
+.astro/
+node_modules/
+package-lock.json
+
+# Project documentation and team files (not part of the site)
+specs/
+docs/
+plantillas/
+.claude/
+CLAUDE.md
+
+# Legacy static site (removed in T8)
+index.html
+style.css
+script.js

@@ -1,0 +1,168 @@
+# Interface texts for the site (spec 002, R1.4). Approved by the user in D-120.
+# Every leaf is a Localized value { es, en }. Texts that come from spec 001 data are not repeated here.
+
+skipLink:
+  es: "Saltar al contenido"
+  en: "Skip to content"
+
+home:
+  logoLabel:
+    es: "Uriel Vega, inicio"
+    en: "Uriel Vega, home"
+
+nav:
+  label:
+    es: "Principal"
+    en: "Main"
+  menu:
+    es: "Menú"
+    en: "Menu"
+
+lang:
+  label:
+    es: "Idioma"
+    en: "Language"
+  es:
+    name:
+      es: "Español"
+      en: "Español"
+  en:
+    name:
+      es: "English"
+      en: "English"
+
+sections:
+  projects:
+    es: "Proyectos"
+    en: "Projects"
+  currentWork:
+    es: "En qué estoy trabajando"
+    en: "What I'm working on"
+  about:
+    es: "Sobre mí"
+    en: "About me"
+  skills:
+    es: "Habilidades"
+    en: "Skills"
+  contact:
+    es: "Contacto"
+    en: "Contact"
+
+hiring:
+  heading:
+    es: "Datos de contratación"
+    en: "Hiring details"
+  location:
+    es: "Ubicación"
+    en: "Location"
+  workMode:
+    es: "Modalidad"
+    en: "Work mode"
+  seeking:
+    es: "Búsqueda"
+    en: "Looking for"
+  availability:
+    es: "Disponibilidad"
+    en: "Availability"
+  education:
+    es: "Estudios"
+    en: "Education"
+  english:
+    es: "Inglés"
+    en: "English"
+
+fields:
+  status:
+    es: "Estado"
+    en: "Status"
+  technologies:
+    es: "Tecnologías"
+    en: "Technologies"
+  progress:
+    es: "Avance"
+    en: "Progress"
+
+external:
+  newTab:
+    es: "(se abre en una pestaña nueva)"
+    en: "(opens in a new tab)"
+
+timeline:
+  title:
+    es: "Mi experiencia con IA"
+    en: "My AI experience"
+  step1:
+    title:
+      es: "Hice un curso de desarrollo con IA"
+      en: "I took an AI development course"
+  step2:
+    title:
+      es: "Armé mi propio equipo de agentes especializados"
+      en: "I built my own team of specialized agents"
+  step3:
+    title:
+      es: "Los orquesto con la metodología SDD"
+      en: "I orchestrate them with the SDD methodology"
+  step4:
+    title:
+      es: "Hoy: {skill}, nivel {level}"
+      en: "Today: {skill}, {level} level"
+  agentsLabel:
+    es: "Agentes especializados"
+    en: "Specialized agents"
+  agents:
+    requirements:
+      es: "Requisitos"
+      en: "Requirements"
+    architecture:
+      es: "Arquitectura"
+      en: "Architecture"
+    design:
+      es: "Diseño"
+      en: "Design"
+    development:
+      es: "Desarrollo"
+      en: "Development"
+    qa:
+      es: "QA"
+      en: "QA"
+    security:
+      es: "Seguridad"
+      en: "Security"
+
+skills:
+  levelPrefix:
+    es: ", nivel"
+    en: ", level"
+  backedBy:
+    es: "Respaldado por"
+    en: "Backed by"
+  legend:
+    es: "Qué significa cada nivel"
+    en: "What each level means"
+
+whatsapp:
+  floatLabel:
+    es: "WhatsApp"
+    en: "WhatsApp"
+
+footer:
+  rights:
+    es: "© {year} Uriel Vega"
+    en: "© {year} Uriel Vega"
+
+notFound:
+  title:
+    es: "Página no encontrada"
+    en: "Page not found"
+  body:
+    es: "Esta página no existe o cambió de dirección."
+    en: "This page doesn't exist or has moved."
+  back:
+    es: "Volver al inicio"
+    en: "Back to home"
+
+seo:
+  ogImageAlt:
+    es: "Uriel Vega · Estudiante de Programación · Desarrollo con IA"
+    en: "Uriel Vega · Programming student · AI-assisted development"

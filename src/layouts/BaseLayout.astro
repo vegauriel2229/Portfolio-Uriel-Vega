@@ -1,0 +1,66 @@
+---
+import { Font } from "astro:assets";
+import type { Locale } from "@/lib/i18n";
+import { FAVICON, type PageHead } from "@/lib/seo";
+import "@/styles/global.css";
+
+interface Props {
+  lang: Locale;
+  head: PageHead;
+  skipLinkLabel: string;
+}
+
+const { lang, head, skipLinkLabel } = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{head.title}</title>
+    {head.description && <meta name="description" content={head.description} />}
+    {head.noindex && <meta name="robots" content="noindex" />}
+    {head.canonical && <link rel="canonical" href={head.canonical} />}
+    {head.alternates.map(({ hreflang, href }) => (
+      <link rel="alternate" hreflang={hreflang} href={href} />
+    ))}
+    {head.openGraph.map(([property, content]) => (
+      <meta property={property} content={content} />
+    ))}
+    {head.twitter.map(([name, content]) => (
+      <meta name={name} content={content} />
+    ))}
+    <link rel="icon" href={FAVICON.svg} type="image/svg+xml" />
+    <link rel="icon" href={FAVICON.ico} sizes="32x32" />
+    <link rel="apple-touch-icon" href={FAVICON.appleTouch} />
+    {head.jsonLd && (
+      <script is:inline type="application/ld+json" set:html={head.jsonLd} />
+    )}
+    <Font
+      cssVariable="--font-literata"
+      preload={[{ weight: 500, style: "normal", subset: "latin" }]}
+    />
+    <Font
+      cssVariable="--font-atkinson"
+      preload={[{ weight: 400, style: "normal", subset: "latin" }]}
+    />
+  </head>
+  <body data-tone="light">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:inline-flex focus:min-h-(--size-touch) focus:items-center focus:border focus:border-line focus:bg-surface focus:px-4 focus:font-bold focus:text-text"
+    >
+      {skipLinkLabel}
+    </a>
+    <header data-tone="dark" class="bg-bg text-text">
+      <slot name="header" />
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer data-tone="dark" class="bg-bg text-text">
+      <slot name="footer" />
+    </footer>
+  </body>
+</html>
