@@ -4,11 +4,20 @@
 //
 // What it guards:
 // 1. dogObserver watches the sized box, never the 0x0 layer, so dogVisible
-//    is true on screen and hopTo takes the animated path (fly/stroll).
-// 2. hopTo keeps the instant branch ONLY for the off-screen case (!dogVisible).
-// 3. blockers() still skips viewport-fixed controls (no document position)
-//    without dropping the in-flow text/control coverage (R25.3).
-// 4. D-170: no reduced-motion gate remains — the mascot always hops,
+//    is live while the dog is on screen.
+// 2. hopTo never teleports a visible move: the instant place() runs ONLY for
+//    the hidden initial position or a far off-screen destination (viewport
+//    geometry via scrollY/innerHeight); otherwise it animates via fly() with
+//    an arc, or falls in from the screen edge via enter() (380 ms).
+// 3. fly() cycles the sprite by instantaneous direction: LEAP rising, DROP
+//    falling, WALK frames on horizontal stretches; landing rests SIT + one
+//    tail wag (rest/stroll).
+// 4. measure() grants no self/container exemption (no other.contains(el)):
+//    the resting strip above every spot must be free air (RNF18), and the
+//    layout is re-measured after it settles (fonts/load/images + delayed
+//    passes); blockers() still skips viewport-fixed controls (no document
+//    position) without dropping the in-flow text/control coverage (R25.3).
+// 5. D-170: no reduced-motion gate remains — the mascot always hops,
 //    startStill is gone and hide() always plays the burst on screen.
 
 import { readFileSync } from "node:fs";
@@ -40,16 +49,44 @@ check(
   src.includes("box.style.width") && src.includes("box.style.height"),
 );
 
-// 2. hopTo: instant apply only when off-screen; animated path otherwise.
+// 2. hopTo: visible moves always animate; instant place only when hidden/far.
 const hopTo = block("hopTo");
 check(
-  "hopTo instant branch gated by !dogVisible",
-  /if\s*\(!dogVisible\)/.test(hopTo),
+  "hopTo never teleports on !dogVisible alone",
+  !/if\s*\(!dogVisible\)/.test(hopTo),
+);
+check(
+  "hopTo decides by viewport geometry",
+  hopTo.includes("inViewport") &&
+    src.includes("window.scrollY") &&
+    src.includes("window.innerHeight"),
+);
+check(
+  "hopTo instant place only when hidden initial or off-screen",
+  hopTo.includes("place(to.x, to.y)") &&
+    hopTo.includes("current === -1") &&
+    hopTo.includes("!destVisible"),
 );
 check("hopTo animates via fly()", hopTo.includes("fly(from, to"));
+check("hopTo falls in via enter()", hopTo.includes("enter(target)"));
 check("hopTo chains rest()/stroll()", hopTo.includes("rest(target)"));
 
-// 3. blockers(): fixed controls excluded, in-flow coverage kept.
+// 3. fly(): sprite follows the instantaneous direction.
+const fly = block("fly");
+check("fly shows LEAP rising", fly.includes("FRAME_LEAP"));
+check("fly shows DROP falling", fly.includes("FRAME_DROP"));
+check("fly cycles WALK frames", fly.includes("WALK_FRAMES"));
+
+// 4. measure(): no self/container exemption; re-measure after settle.
+check(
+  "measure grants no container exemption",
+  !src.includes("other.contains(el)"),
+);
+check(
+  "layout re-measured after it settles",
+  src.includes("requestAnimationFrame(schedule)") &&
+    src.includes("setTimeout(schedule"),
+);
 const blockers = block("blockers");
 check("blockers skips position:fixed", blockers.includes('"fixed"'));
 check(
@@ -59,7 +96,7 @@ check(
   ),
 );
 
-// 4. D-170: motion preference ignored — always hopping, burst on hide.
+// 5. D-170: motion preference ignored — always hopping, burst on hide.
 const hide = block("hide");
 check("no reduced-motion gate", !src.includes("prefers-reduced-motion"));
 check("startStill removed", !src.includes("startStill"));

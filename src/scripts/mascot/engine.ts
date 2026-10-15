@@ -175,9 +175,12 @@ function measure(platforms: Element[]): void {
     };
     if (rest.left < 0 || rest.top < minTop) continue;
     let free = true;
+    // No exemption for the platform itself or its containers: the strip the
+    // dog takes standing on the spot must be free air above it, even when
+    // the text belongs to the same card or heading (RNF18, design 6.10.4).
+    // The platform's own rect starts at the spot top, so a valid spot never
+    // touches it (edge contact is not an overlap).
     for (const other of blocked) {
-      // Its own heading or card never blocks its dog.
-      if (other === el || other.contains(el)) continue;
       const box = other.getBoundingClientRect();
       if (box.width < 1 || box.height < 1) continue;
       const ox = box.left + scrollX;
@@ -253,13 +256,30 @@ function fly(
       : 0;
   const mirror = to.x < from.x;
   const start = performance.now();
+  let prevX = from.x;
+  let prevY = from.y;
   if (box) box.style.willChange = "transform";
   const tick = (now: number): void => {
     const t = Math.min(1, (now - start) / duration);
     const x = from.x + (to.x - from.x) * easeOut(t) + lean * 4 * t * (1 - t);
     const y = from.y + (to.y - from.y) * easeInOut(t) - arc * 4 * t * (1 - t);
     place(x, y);
-    showFrame(t < 0.45 ? FRAME_LEAP : FRAME_DROP, mirror);
+    // Sprite follows the instantaneous direction (design 6.10.5): LEAP while
+    // rising, DROP while falling, WALK frames on a mostly horizontal stretch.
+    const dx = x - prevX;
+    const dy = y - prevY;
+    prevX = x;
+    prevY = y;
+    if (Math.abs(dx) > Math.abs(dy) * 2 && Math.abs(dx) > 0.5) {
+      showFrame(
+        WALK_FRAMES[
+          Math.floor((now - start) / tokens.walkFrame) % WALK_FRAMES.length
+        ]!,
+        mirror,
+      );
+    } else {
+      showFrame(dy < 0 ? FRAME_LEAP : FRAME_DROP, mirror);
+    }
     if (t < 1) {
       raf = window.requestAnimationFrame(tick);
     } else {
@@ -369,23 +389,37 @@ function enter(target: number): void {
   raf = window.requestAnimationFrame(tick);
 }
 
+/** True while a document height is at least partly inside the viewport. */
+function inViewport(y: number): boolean {
+  return y >= window.scrollY - dogSize && y <= window.scrollY + window.innerHeight;
+}
+
 function hopTo(target: number): void {
   if (!running || target < 0 || target >= spots.length) return;
-  if (!dogVisible) {
-    const to = spotXY(target);
+  const to = spotXY(target);
+  const from = { x: posX, y: posY };
+  // dogVisible lags a frame behind (IntersectionObserver) and is false during
+  // every scroll, so geometry decides: a visible displacement always animates.
+  const destVisible = inViewport(to.y);
+  const fromVisible =
+    current !== -1 && (dogVisible || inViewport(from.y));
+  // Instant place only for the hidden initial position or a far off-screen
+  // destination. When the dog later enters the view it falls in (380 ms).
+  if (!destVisible && (current === -1 || !fromVisible)) {
+    if (busy) window.cancelAnimationFrame(raf);
+    clearTimers();
     place(to.x, to.y);
     showFrame(FRAME_SIT, mirror);
     current = target;
     busy = false;
     return;
   }
-  const to = spotXY(target);
-  const from = { x: posX, y: posY };
+  // Far or off-screen origin, never a teleport: fall in from the screen edge.
   const far =
-    Math.abs(to.y - from.y) > window.innerHeight * 1.5 ||
-    from.y < window.scrollY - dogSize ||
-    from.y > window.scrollY + window.innerHeight;
-  if (current === -1 || far) {
+    current === -1 ||
+    !fromVisible ||
+    Math.abs(to.y - from.y) > window.innerHeight * 1.5;
+  if (far) {
     if (busy) window.cancelAnimationFrame(raf);
     clearTimers();
     enter(target);
@@ -519,6 +553,11 @@ function startHopping(platforms: Element[]): void {
     resizeObserver = new ResizeObserver(schedule);
     resizeObserver.observe(document.documentElement);
   }
+
+  // The first measure can run with fallback fonts or half-loaded images and
+  // keep spots that cover text (RNF18): re-measure once the layout settles.
+  window.requestAnimationFrame(schedule);
+  window.setTimeout(schedule, MEASURE_WAIT_MS * 2);
 
   request(activeSpot());
 }
