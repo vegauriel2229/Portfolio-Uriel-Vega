@@ -9,8 +9,8 @@ const TOTAL_STEPS = 4;
 const RESIZE_WAIT_MS = 150;
 /** The live region announces the resting step only, not every step of a fast scroll (6.8.2). */
 const ANNOUNCE_WAIT_MS = 300;
-/** Slack so rounding cannot flip the pin on and off (hysteresis). */
-const FIT_SLACK_PX = 8;
+/** Rounding tolerance so sub-pixel heights cannot flip the pin on and off. */
+const FIT_SLACK_PX = 2;
 /** Central reading strip that the sentinels must cross (design section 6.8.7). */
 const STRIP_MARGIN = "-35% 0px -55% 0px";
 
@@ -121,7 +121,7 @@ export function initTimeline(): void {
    */
   const pinnedFits = (): boolean => {
     if (track.dataset.pin === "on")
-      return stage.scrollHeight <= stage.clientHeight;
+      return stage.scrollHeight <= stage.clientHeight + FIT_SLACK_PX;
     const width = track.clientWidth;
     if (width === 0) return false;
     const wrapper = document.createElement("div");
@@ -142,7 +142,7 @@ export function initTimeline(): void {
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
     try {
-      return clone.scrollHeight <= clone.clientHeight - FIT_SLACK_PX;
+      return clone.scrollHeight <= clone.clientHeight + FIT_SLACK_PX;
     } finally {
       wrapper.remove();
     }
@@ -150,8 +150,10 @@ export function initTimeline(): void {
 
   /*
    * Full check (init, resize, media change): the pin needs the scenario and room for
-   * the stage (R24.9). Downgrades only (overflow while pinned): ResizeObserver on the stage.
-   * Upgrades never come from the stage observer, so rounding cannot flip the pin in a loop.
+   * the stage (R24.9). The stage observer re-checks both ways: downgrade while
+   * pinned (direct measurement) and upgrade while unpinned (hidden-clone
+   * measurement, e.g. fonts settling late). No loop: the clone answer does not
+   * depend on the current pin state, so a re-fire re-affirms instead of flipping.
    */
   const updatePin = (mode: "full" | "downgrade"): void => {
     if (!scenarioOn()) {
@@ -159,8 +161,12 @@ export function initTimeline(): void {
       return;
     }
     if (mode === "downgrade") {
-      if (track.dataset.pin === "on" && stage.scrollHeight > stage.clientHeight)
-        setPin("off");
+      if (track.dataset.pin === "on") {
+        if (stage.scrollHeight > stage.clientHeight + FIT_SLACK_PX)
+          setPin("off");
+      } else if (track.dataset.pin === "off") {
+        if (pinnedFits()) setPin("on");
+      }
       return;
     }
     setPin(pinnedFits() ? "on" : "off");
