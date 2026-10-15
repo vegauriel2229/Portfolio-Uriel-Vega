@@ -2,6 +2,7 @@
 // No cookies, no network (R17.7); the only storage is the mascot preference (R25.11).
 
 import { initMotion } from "@/scripts/motion";
+import { initSkillsTerminal } from "@/scripts/skills";
 import { initTimeline } from "@/scripts/timeline";
 import { initMascotToggle, isMascotHidden } from "@/scripts/mascot-toggle";
 
@@ -84,6 +85,7 @@ function loadMascot(): void {
 enhanceMenu();
 initMotion();
 initTimeline();
+initSkillsTerminal();
 enhanceLanguageSwitch();
 initMascotToggle();
 loadMascot();

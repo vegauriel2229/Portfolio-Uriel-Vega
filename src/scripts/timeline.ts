@@ -109,12 +109,43 @@ export function initTimeline(): void {
     else if (track.dataset.pin !== value) track.dataset.pin = value;
   };
 
-  /** Height the pinned stage would have, from the geometry of 6.8.4 (header 4rem + 1.5rem of air). */
-  const pinnedHeight = (): number => {
-    const root =
-      Number.parseFloat(getComputedStyle(document.documentElement).fontSize) ||
-      16;
-    return window.innerHeight - 4 * root - 1.5 * root;
+  /*
+   * Whether the pinned stage would fit, measured on a hidden clone so the
+   * visible list is never touched (hidden-clone method, measurement only).
+   * The list-mode stage stacks all 4 steps, while the pinned stage stacks
+   * every step in a single grid cell (6.8.4): measuring the visible stage
+   * would always report overflow and the pin would never engage at
+   * 1024/1440. The clone sits in an offscreen [data-pin="on"] track of the
+   * same width, so it gets the exact pinned geometry; step 3 stands in as
+   * the tallest representative (counter, hint and team all shown).
+   */
+  const pinnedFits = (): boolean => {
+    if (track.dataset.pin === "on")
+      return stage.scrollHeight <= stage.clientHeight;
+    const width = track.clientWidth;
+    if (width === 0) return false;
+    const wrapper = document.createElement("div");
+    wrapper.setAttribute("data-timeline", "");
+    wrapper.setAttribute("data-pin", "on");
+    wrapper.setAttribute("aria-hidden", "true");
+    // Offscreen through CSSOM (allowed by the CSP, 5.5); the dist HTML
+    // keeps zero style attributes.
+    wrapper.style.position = "fixed";
+    wrapper.style.top = "0";
+    wrapper.style.left = "-99999px";
+    wrapper.style.width = `${width}px`;
+    wrapper.style.visibility = "hidden";
+    wrapper.style.pointerEvents = "none";
+    const clone = stage.cloneNode(true) as HTMLElement;
+    clone.setAttribute("data-step", "3");
+    clone.removeAttribute("data-play");
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+    try {
+      return clone.scrollHeight <= clone.clientHeight - FIT_SLACK_PX;
+    } finally {
+      wrapper.remove();
+    }
   };
 
   /*
@@ -132,11 +163,7 @@ export function initTimeline(): void {
         setPin("off");
       return;
     }
-    const fits =
-      track.dataset.pin === "on"
-        ? stage.scrollHeight <= stage.clientHeight
-        : stage.scrollHeight <= pinnedHeight() - FIT_SLACK_PX;
-    setPin(fits ? "on" : "off");
+    setPin(pinnedFits() ? "on" : "off");
   };
 
   let resizeTimer = 0;

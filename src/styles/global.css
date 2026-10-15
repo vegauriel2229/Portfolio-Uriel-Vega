@@ -1229,6 +1229,118 @@
 }
 
 /*
+ * Skills terminal (D-167): one violet window per level group. Each skill is a
+ * `$ name` line; `backedBy` follows as `# …` comment lines. The list is
+ * complete without JavaScript: the typing entrance only exists under
+ * [data-terminals-live], which skills.ts sets after checking JS and motion
+ * preference. Only `transform` and `opacity` move; the block cursor blinks
+ * 3 times and stays solid (finite, R23.7).
+ */
+@layer components {
+  .term {
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-deep);
+  }
+  .term-bar {
+    display: flex;
+    gap: 0.45rem;
+    padding: 0.8rem 1rem 0;
+  }
+  .term-bar i {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    background: var(--color-hair);
+  }
+  .term-bar i:first-child {
+    background: var(--color-accent);
+  }
+  .term-lines {
+    margin: 0;
+    padding: 0.8rem 1rem 1rem;
+    list-style: none;
+  }
+  .term-line {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding-block: 0.3rem;
+    overflow-wrap: anywhere;
+  }
+  .term-prompt {
+    flex: none;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+  .term-text {
+    font-family: var(--font-display);
+    font-size: var(--text-h4);
+    font-weight: 500;
+    line-height: var(--text-h4--line-height);
+  }
+  .term-comment .term-prompt,
+  .term-comment .term-text {
+    color: var(--color-muted);
+  }
+  .term-comment .term-text {
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    font-weight: 400;
+    line-height: var(--text-small--line-height);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-terminals-live] [data-term-line]:not([data-typed]) {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  [data-terminals-live] [data-term-line][data-typed] {
+    animation: term-in var(--duration-reveal) var(--ease-out) both;
+  }
+  [data-terminals-live] [data-term-line][data-active] .term-text::after {
+    content: "";
+    display: inline-block;
+    width: 0.55em;
+    height: 1.05em;
+    margin-left: 0.35em;
+    vertical-align: text-bottom;
+    background: var(--color-signal);
+    animation: term-caret 480ms var(--ease-out) 3;
+  }
+  @keyframes term-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes term-caret {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+@media print {
+  [data-terminals-live] [data-term-line] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  [data-terminals-live] [data-term-line][data-active] .term-text::after {
+    display: none !important;
+  }
+}
+
+/*
  * Mascot layer (design sections 5.7 and 6.10). Decorative, non-interactive,
  * above the content but below the pinned timeline stage (41) and the header.
  * The engine writes only `transform` (and the sprite frame) from JavaScript.

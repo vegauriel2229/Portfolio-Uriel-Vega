@@ -1,7 +1,6 @@
 ---
 import type { Content } from "@/lib/content";
 import { localize, type Locale } from "@/lib/i18n";
-import LevelMeter from "@/components/LevelMeter.astro";
 
 interface Props {
   locale: Locale;
@@ -11,16 +10,12 @@ interface Props {
 const { locale, content } = Astro.props;
 const { skills, skillLevels, projects, ui } = content;
 
-const LEVELS = [
-  { id: "advanced", lit: 3 },
-  { id: "intermediate", lit: 2 },
-  { id: "basic", lit: 1 },
-] as const;
+// D-164: the order of the data file, not alphabetical.
+const LEVELS = ["advanced", "intermediate", "basic"] as const;
 
 // Groups in the order Advanced, Intermediate, Basic; inside each one, the order of the data.
-const groups = LEVELS.map(({ id, lit }) => ({
+const groups = LEVELS.map((id) => ({
   id,
-  lit,
   level: skillLevels[id]!,
   // Hidden text read after each name: "Python, nivel Avanzado" (R7.5).
   levelText: `${localize(ui.skills.levelPrefix, locale)} ${localize(skillLevels[id]!.label, locale)}`,
@@ -48,39 +43,55 @@ const projectName = (id: string): string =>
 
     <div class="mt-8">
       {groups.map((group) => (
-        <div
-          data-reveal="grow"
-          class="grid gap-4 border-t border-hair py-7 min-[900px]:grid-cols-[4fr_7fr] min-[900px]:gap-16"
-        >
+        <div class="grid gap-4 border-t border-hair py-7 min-[900px]:grid-cols-[4fr_7fr] min-[900px]:gap-16">
           <div>
-            <h3 class="flex items-center gap-3.5 text-h3">
+            <h3 class="text-h3">
               <span data-platform="letters">
                 {localize(group.level.label, locale)}
               </span>
-              <LevelMeter lit={group.lit} />
             </h3>
             <p class="mt-2 max-w-[34ch] text-small text-muted">
               {localize(group.level.definition, locale)}
             </p>
           </div>
-          <ul role="list" class="divide-y divide-hair">
-            {group.skills.map((skill) => (
-              <li class="py-3 first:pt-0">
-                <span class="font-display text-h4 font-medium">
-                  {localize(skill.name, locale)}
-                  <span class="sr-only">{group.levelText}</span>
-                </span>
-                {skill.backedBy.length > 0 && (
-                  <p class="text-small text-muted">
-                    {localize(ui.skills.backedBy, locale)}{" "}
-                    {skill.backedBy
-                      .map((ref) => projectName(ref.id))
-                      .join(", ")}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
+          {/* D-167: violet terminal window. Every skill is a `$ name` line and
+              `backedBy` follows as `# …` comment lines. Complete without JS:
+              the typing entrance only runs under [data-terminals-live]. */}
+          <div data-terminal class="term">
+            <div aria-hidden="true" class="term-bar">
+              <i></i>
+              <i></i>
+              <i></i>
+            </div>
+            <ul role="list" class="term-lines">
+              {group.skills.map((skill) => (
+                <>
+                  <li data-term-line class="term-line">
+                    <span aria-hidden="true" class="term-prompt">
+                      $
+                    </span>
+                    <span class="term-text">
+                      {localize(skill.name, locale)}
+                      <span class="sr-only">{group.levelText}</span>
+                    </span>
+                  </li>
+                  {skill.backedBy.length > 0 && (
+                    <li data-term-line class="term-line term-comment">
+                      <span aria-hidden="true" class="term-prompt">
+                        #
+                      </span>
+                      <span class="term-text">
+                        {localize(ui.skills.backedBy, locale)}{" "}
+                        {skill.backedBy
+                          .map((ref) => projectName(ref.id))
+                          .join(", ")}
+                      </span>
+                    </li>
+                  )}
+                </>
+              ))}
+            </ul>
+          </div>
         </div>
       ))}
     </div>
