@@ -117,6 +117,9 @@ function render(): void {
 function place(x: number, y: number): void {
   posX = x;
   posY = y;
+  // The box starts at the document origin: keep it hidden until this first
+  // real position so it never flashes over the header logo at (0, 0).
+  if (box && box.style.opacity !== "1") box.style.opacity = "1";
   render();
 }
 
@@ -424,6 +427,9 @@ function buildLayer(): void {
   layer.className = "mascot";
   box = document.createElement("div");
   box.className = "mascot-box";
+  // Hidden until the first place(): the layer is absolute at the document
+  // origin and would otherwise cover the header logo at (0, 0).
+  box.style.opacity = "0";
   strip = document.createElement("div");
   strip.className = "mascot-strip";
   strip.style.backgroundImage = `url("${spriteUrl}")`;
