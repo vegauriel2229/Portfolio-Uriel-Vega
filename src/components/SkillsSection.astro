@@ -39,7 +39,11 @@ const projectName = (id: string): string =>
 >
   <div class="wrap py-(--space-section)">
     <h2 id="skills-title" data-reveal="rise" class="mask text-h2 text-balance">
-      <span>{localize(ui.sections.skills, locale)}</span>
+      <span>
+        <span data-platform="letters">
+          {localize(ui.sections.skills, locale)}
+        </span>
+      </span>
     </h2>
 
     <div class="mt-8">
@@ -50,7 +54,9 @@ const projectName = (id: string): string =>
         >
           <div>
             <h3 class="flex items-center gap-3.5 text-h3">
-              {localize(group.level.label, locale)}
+              <span data-platform="letters">
+                {localize(group.level.label, locale)}
+              </span>
               <LevelMeter lit={group.lit} />
             </h3>
             <p class="mt-2 max-w-[34ch] text-small text-muted">

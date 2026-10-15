@@ -24,7 +24,11 @@ const { projects, ui } = content;
       data-reveal="rise"
       class="mask text-h2 text-balance"
     >
-      <span>{localize(ui.sections.projects, locale)}</span>
+      <span>
+        <span data-platform="letters">
+          {localize(ui.sections.projects, locale)}
+        </span>
+      </span>
     </h2>
     <div class="mt-8 grid gap-16 min-[900px]:gap-24">
       {projects.map((project) => (

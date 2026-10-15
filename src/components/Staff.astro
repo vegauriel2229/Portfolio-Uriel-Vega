@@ -13,7 +13,8 @@ const NOTES = 9;
   </div>
   <div class="staff-notes">
     {Array.from({ length: NOTES }, () => (
-      <b />
+      // Each note head is a landing platform for the mascot (design section 6.10.3).
+      <b data-platform="note" />
     ))}
   </div>
 </div>

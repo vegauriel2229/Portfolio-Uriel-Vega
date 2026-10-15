@@ -114,6 +114,13 @@
   --stagger-step: 90ms;
   --stagger-hero: 110ms;
   --stagger-reveal: 120ms;
+  --mascot-anticipate: 70ms;
+  --mascot-land: 110ms;
+  --mascot-hop-min: 280ms;
+  --mascot-hop-max: 450ms;
+  --mascot-hop-per-px: 0.35ms;
+  --mascot-enter: 380ms;
+  --mascot-walk-frame: 100ms;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: linear(
@@ -1218,5 +1225,35 @@
 @media print {
   .meter i {
     transform: none !important;
+  }
+}
+
+/*
+ * Mascot layer (design sections 5.7 and 6.10). Decorative, non-interactive,
+ * above the content but below the pinned timeline stage (41) and the header.
+ * The engine writes only `transform` (and the sprite frame) from JavaScript.
+ */
+@layer components {
+  .mascot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    pointer-events: none;
+  }
+  .mascot-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+  }
+  .mascot-strip {
+    image-rendering: pixelated;
+  }
+}
+
+@media print {
+  .mascot {
+    display: none !important;
   }
 }

@@ -55,7 +55,27 @@ function enhanceLanguageSwitch(): void {
     });
 }
 
+/** Mascot (design 5.4, 5.7, 6.10): deferred chunk, loaded once, after first paint. */
+function loadMascot(): void {
+  // No platforms (404): the engine chunk is never even fetched (R25.13).
+  if (!document.querySelector("[data-platform]")) return;
+  const schedule =
+    typeof window.requestIdleCallback === "function"
+      ? (run: () => void): void => {
+          window.requestIdleCallback(run);
+        }
+      : (run: () => void): void => {
+          window.setTimeout(run, 1500);
+        };
+  const run = (): void => {
+    void import("./mascot/engine").then((engine) => engine.start());
+  };
+  if (document.readyState === "complete") schedule(run);
+  else window.addEventListener("load", () => schedule(run), { once: true });
+}
+
 enhanceMenu();
 initMotion();
 initTimeline();
 enhanceLanguageSwitch();
+loadMascot();

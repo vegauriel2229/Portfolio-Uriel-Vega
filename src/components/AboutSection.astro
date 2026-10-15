@@ -42,10 +42,16 @@ const aiParagraph = profile.about.paragraphs.find(
 >
   <div class="wrap py-(--space-section)">
     <h2 id="about-title" data-reveal="rise" class="mask text-h2 text-balance">
-      <span>{localize(ui.sections.about, locale)}</span>
+      <span>
+        <span data-platform="letters">
+          {localize(ui.sections.about, locale)}
+        </span>
+      </span>
     </h2>
 
-    <h3 class="mt-8 text-h3">{localize(ui.hiring.heading, locale)}</h3>
+    <h3 class="mt-8 text-h3">
+      <span data-platform="letters">{localize(ui.hiring.heading, locale)}</span>
+    </h3>
     <dl data-reveal="fade" class="mt-5 grid gap-x-8 gap-y-4 md:grid-cols-2">
       {facts.map(({ label, value, wide }) => (
         <div class:list={[wide && "md:col-span-2"]}>
@@ -64,7 +70,9 @@ const aiParagraph = profile.about.paragraphs.find(
     {/* AI block (R6.3, D-104): heading and paragraph in normal flow, then the Orchestra timeline (T7, R24). */}
     <section aria-labelledby="ai-title" class="mt-12">
       <h3 id="ai-title" class="text-h3">
-        {localize(ui.timeline.title, locale)}
+        <span data-platform="letters">
+          {localize(ui.timeline.title, locale)}
+        </span>
       </h3>
       {aiParagraph && (
         <p

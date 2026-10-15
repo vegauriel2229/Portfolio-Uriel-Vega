@@ -56,7 +56,11 @@ const rows = [
 >
   <div class="wrap py-(--space-section)">
     <h2 id="contact-title" data-reveal="rise" class="mask text-h2 text-balance">
-      <span>{localize(ui.sections.contact, locale)}</span>
+      <span>
+        <span data-platform="letters">
+          {localize(ui.sections.contact, locale)}
+        </span>
+      </span>
     </h2>
     <ul role="list" data-reveal-group class="mt-8 max-w-[36rem]">
       {rows.map((row) => (
