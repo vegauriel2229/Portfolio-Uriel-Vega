@@ -1,5 +1,5 @@
 # Text values are copied unchanged (D-040). Ordered list by `order` (R4.3). Link ids = type (D-046).
-# repository.publishable stays false until R15 is met in spec 002 (D-023).
+# repository.publishable is true since R4.6 was confirmed in spec 002 (D-023).
 
 projects:
   - id: vegatech
@@ -30,7 +30,7 @@ projects:
         label:
           es: "Ver repositorio de VegaTech en GitHub"
           en: "View VegaTech repository on GitHub"
-        publishable: false
+        publishable: true
 
   - id: crisur
     order: 2
@@ -59,4 +59,4 @@ projects:
         label:
           es: "Ver repositorio de Crisur Polarizados en GitHub"
           en: "View Crisur Polarizados repository on GitHub"
-        publishable: false
+        publishable: true
