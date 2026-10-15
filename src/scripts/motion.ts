@@ -1,17 +1,14 @@
 // Reveals below the first screen (design section 5.5, technique 2). Progressive enhancement:
-// `data-motion` goes on <html> only when this script runs and the visitor accepts motion, and only then
-// do the hidden start states of the CSS exist. Without it (no JS, reduced motion, error) all is visible.
+// `data-motion` goes on <html> only when this script runs (D-170: animations always
+// run, the visitor's motion preference is ignored), and only then do the hidden
+// start states of the CSS exist. Without it (no JS, error) all is visible.
 
 const THRESHOLD = 0.35;
 // Reveal a little before the element reaches the bottom edge of the screen.
 const ROOT_MARGIN = "0px 0px -8% 0px";
 
 export function initMotion(): void {
-  if (
-    !("IntersectionObserver" in window) ||
-    !window.matchMedia("(prefers-reduced-motion: no-preference)").matches
-  )
-    return;
+  if (!("IntersectionObserver" in window)) return;
 
   const targets = document.querySelectorAll<HTMLElement>("[data-reveal]");
   if (targets.length === 0) return;

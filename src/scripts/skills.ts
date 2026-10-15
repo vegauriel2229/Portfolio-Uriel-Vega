@@ -1,15 +1,14 @@
 // Skills terminal (D-167): each level group reads as a violet terminal window
 // whose lines are typed one by one. Progressive enhancement: without this
-// module (no JS), with reduced motion, or without IntersectionObserver,
-// every line is already visible and nothing hides.
+// module (no JS), or without IntersectionObserver, every line is already
+// visible and nothing hides. D-170: the typing entrance always runs,
+// the visitor's motion preference is ignored.
 
 /** Pause between typed lines: the whole group completes in about 2 s. */
 const LINE_DELAY_MS = 200;
 
 export function initSkillsTerminal(): void {
   if (!("IntersectionObserver" in window)) return;
-  if (!window.matchMedia("(prefers-reduced-motion: no-preference)").matches)
-    return;
   const terminals = Array.from(
     document.querySelectorAll<HTMLElement>("[data-terminal]"),
   );

@@ -95,14 +95,12 @@ export function initTimeline(): void {
   );
   sentinels.forEach((sentinel) => observer.observe(sentinel));
 
-  const motionQuery = window.matchMedia(
-    "(prefers-reduced-motion: no-preference)",
-  );
+  // D-170: the pin scenario no longer checks the motion preference;
+  // animations always run. Only the viewport size can keep the static list.
   const widthQuery = window.matchMedia("(min-width: 20rem)");
   const heightQuery = window.matchMedia("(min-height: 40rem)");
 
-  const scenarioOn = (): boolean =>
-    motionQuery.matches && widthQuery.matches && heightQuery.matches;
+  const scenarioOn = (): boolean => widthQuery.matches && heightQuery.matches;
 
   const setPin = (value: "on" | "off"): void => {
     if (track.dataset.pin !== value) track.dataset.pin = value;
@@ -155,8 +153,8 @@ export function initTimeline(): void {
 
   /*
    * Single check (init, resize, media change, stage resize): the pin needs
-   * the scenario (motion allowed, viewport at least 20rem x 40rem, so below
-   * that it stays a static list, R24.9) and room for the stage. Both the
+   * the scenario (viewport at least 20rem x 40rem, so below that it stays
+   * a static list, R24.9; D-170: motion preference is ignored) and room
    * engaged and the unpinned states measure through the hidden clone, whose
    * answer does not depend on the current pin state, so a re-fire re-affirms
    * instead of flipping (no loop).
@@ -179,7 +177,6 @@ export function initTimeline(): void {
   setStep(1, true);
 
   window.addEventListener("resize", scheduleFull);
-  motionQuery.addEventListener("change", scheduleFull);
   widthQuery.addEventListener("change", scheduleFull);
   heightQuery.addEventListener("change", scheduleFull);
 

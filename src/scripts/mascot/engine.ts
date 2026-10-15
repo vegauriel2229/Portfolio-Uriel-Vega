@@ -17,7 +17,7 @@ const WALK_FRAMES = [2, 3, 4, 5];
 
 const CELL = 32;
 const DESKTOP_QUERY = "(min-width: 48rem)";
-const MOTION_QUERY = "(prefers-reduced-motion: no-preference)";
+// D-170: animations always run, the visitor's motion preference is ignored.
 // The reading line a platform must cross to become active (design 5.7).
 const ACTIVE_MARGIN = "0px 0px -45% 0px";
 const MEASURE_WAIT_MS = 150;
@@ -449,43 +449,6 @@ function sizeSprite(): void {
   strip.style.backgroundSize = `${CELL * 9 * (desktop ? 2 : 1)}px ${cell}px`;
 }
 
-/** Reduced motion (D-145): sitting still on a staff note of the home, never hopping. */
-function startStill(platforms: Element[]): void {
-  desktop = window.matchMedia(DESKTOP_QUERY).matches;
-  dogSize = CELL * (desktop ? 2 : 1);
-  measure(platforms);
-  const note = spots.find((spot) =>
-    platforms.some(
-      (el) =>
-        el.getAttribute("data-platform") === "note" &&
-        Math.abs(el.getBoundingClientRect().top + window.scrollY - spot.top) <
-          2,
-    ),
-  );
-  const home = note ?? spots[0];
-  if (!home) return;
-  readTokens();
-  buildLayer();
-  running = true;
-  place(home.center - dogSize / 2, home.top - dogSize);
-  showFrame(FRAME_SIT, false);
-  let timer = 0;
-  const remeasure = (): void => {
-    window.clearTimeout(timer);
-    timer = window.setTimeout(() => {
-      if (!running) return;
-      measure(platforms);
-      sizeSprite();
-      const again = spots[0];
-      if (again && box) place(again.center - dogSize / 2, again.top - dogSize);
-    }, MEASURE_WAIT_MS);
-  };
-  window.addEventListener("resize", remeasure);
-  if (document.fonts) {
-    document.fonts.ready.then(() => remeasure()).catch(() => undefined);
-  }
-}
-
 /** Chain of continuous hops following the reader down (design 6.10.5). */
 function startHopping(platforms: Element[]): void {
   readTokens();
@@ -678,10 +641,6 @@ export function start(): void {
   if (window.innerHeight < MIN_VIEWPORT_HEIGHT) return;
   const platforms = Array.from(document.querySelectorAll("[data-platform]"));
   if (platforms.length === 0) return;
-  if (!window.matchMedia(MOTION_QUERY).matches) {
-    startStill(platforms);
-    return;
-  }
   if (!("IntersectionObserver" in window && "requestAnimationFrame" in window))
     return;
   startHopping(platforms);
@@ -697,19 +656,19 @@ export function stop(): void {
  * fading out (140 ms) and 10 squares of 4 px fly outwards (420 ms, total under
  * 450 ms), then the layer is removed. Only `transform` and `opacity` move
  * (Web Animations API, allowed by the CSP like any script-driven transform).
- * Instant removal with reduced motion or when the dog is off-screen.
+ * Instant removal when the dog is off-screen (D-170: the motion
+ * preference is ignored, the burst always plays on screen).
  */
 export function hide(): void {
   const { target, targetBox } = teardown();
   if (!target || !targetBox) return;
-  const reduce = !window.matchMedia(MOTION_QUERY).matches;
   const rect = targetBox.getBoundingClientRect();
   const onScreen =
     rect.bottom > 0 &&
     rect.top < window.innerHeight &&
     rect.right > 0 &&
     rect.left < window.innerWidth;
-  if (reduce || !onScreen || typeof targetBox.animate !== "function") {
+  if (!onScreen || typeof targetBox.animate !== "function") {
     target.remove();
     return;
   }

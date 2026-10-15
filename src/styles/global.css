@@ -224,9 +224,10 @@
 }
 
 /*
- * Motion (R12.7, R12.8, R23). Only `transform` and `opacity`, never `all`, nothing infinite.
- * Every transition and animation lives inside `prefers-reduced-motion: no-preference`:
- * with reduced motion everything is in its final state and changes are instant.
+ * Motion (R12.7, R12.8, R23; D-170: animations always run, the visitor's
+ * motion preference is ignored). Only `transform` and `opacity`, never
+ * `all`, nothing infinite. Smooth scrolling and the language-change
+ * view transition apply to every visitor.
  */
 @layer components {
   /* Response to touch and cursor (design section 6.9, row 3). Hover only on devices that hover. */
@@ -382,178 +383,182 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
+/*
+ * Motion (R12.7, R12.8, R23; D-170: animations always run, the visitor's
+ * motion preference is ignored). Only `transform` and `opacity`, never
+ * `all`, nothing infinite. Smooth scrolling and the language-change
+ * view transition apply to every visitor.
+ */
+html {
+  scroll-behavior: smooth;
+}
 
-  /* Language change keeps the page continuous (design section 6.9, row 8). Only browsers that support it. */
-  @view-transition {
-    navigation: auto;
-  }
-  ::view-transition-group(root) {
-    animation-duration: var(--duration-ui);
-  }
+/* Language change keeps the page continuous (design section 6.9, row 8). Only browsers that support it. */
+@view-transition {
+  navigation: auto;
+}
+::view-transition-group(root) {
+  animation-duration: var(--duration-ui);
+}
 
-  .tap,
-  .tap-lift,
-  .tap-zoom,
-  .nudge-x,
-  .nudge-y,
-  .nudge-row {
-    transition: transform var(--duration-ui) var(--ease-out);
-  }
-  .tap:active {
-    transition-duration: var(--duration-press);
-  }
-  .navlink::after {
-    transition: transform var(--duration-ui) var(--ease-out);
-  }
+.tap,
+.tap-lift,
+.tap-zoom,
+.nudge-x,
+.nudge-y,
+.nudge-row {
+  transition: transform var(--duration-ui) var(--ease-out);
+}
+.tap:active {
+  transition-duration: var(--duration-press);
+}
+.navlink::after {
+  transition: transform var(--duration-ui) var(--ease-out);
+}
 
-  /*
+/*
    * 1) Load sequence of the home: pure CSS, no JavaScript (R23.6). If the script fails, it still ends in
    * the final state. The h1 never starts with opacity 0, so the LCP is not delayed: it only rises from
    * translateY(55%) inside its mask. Secondary elements do fade in.
    */
-  .hero-line > span {
-    animation: hero-rise var(--duration-hero) var(--ease-out) both;
-  }
-  .hero-line[data-k="0"] > span {
-    animation-delay: 300ms;
-  }
-  .hero-line[data-k="1"] > span {
-    animation-delay: calc(300ms + var(--stagger-hero));
-  }
-  .hero-fx {
-    animation: fade var(--duration-reveal) var(--ease-out) both;
-  }
-  .hero-fx[data-k="0"] {
-    animation-delay: 800ms;
-  }
-  .hero-fx[data-k="1"] {
-    animation-delay: calc(800ms + var(--stagger-reveal));
-  }
-  .hero-fx[data-k="2"] {
-    animation-delay: calc(800ms + 2 * var(--stagger-reveal));
-  }
-  .staff-lines i {
-    animation: draw var(--duration-draw) var(--ease-out) both;
-  }
-  .staff-lines i:nth-child(2) {
-    animation-delay: var(--stagger-step);
-  }
-  .staff-lines i:nth-child(3) {
-    animation-delay: calc(2 * var(--stagger-step));
-  }
-  .staff-lines i:nth-child(4) {
-    animation-delay: calc(3 * var(--stagger-step));
-  }
-  .staff-lines i:nth-child(5) {
-    animation-delay: calc(4 * var(--stagger-step));
-  }
-  .staff-notes b {
-    animation: notepop var(--duration-note) var(--ease-spring) both;
-  }
-  .staff-notes b:nth-child(1) {
-    animation-delay: 1000ms;
-  }
-  .staff-notes b:nth-child(2) {
-    animation-delay: calc(1000ms + var(--stagger-step));
-  }
-  .staff-notes b:nth-child(3) {
-    animation-delay: calc(1000ms + 2 * var(--stagger-step));
-  }
-  .staff-notes b:nth-child(4) {
-    animation-delay: calc(1000ms + 3 * var(--stagger-step));
-  }
-  .staff-notes b:nth-child(5) {
-    animation-delay: calc(1000ms + 4 * var(--stagger-step));
-  }
-  .staff-notes b:nth-child(6) {
-    animation-delay: calc(1000ms + 5 * var(--stagger-step));
-  }
-  .staff-notes b:nth-child(7) {
-    animation-delay: calc(1000ms + 6 * var(--stagger-step));
-  }
-  .staff-notes b:nth-child(8) {
-    animation-delay: calc(1000ms + 7 * var(--stagger-step));
-  }
-  .staff-notes b:nth-child(9) {
-    animation-delay: calc(1000ms + 8 * var(--stagger-step));
-  }
+.hero-line > span {
+  animation: hero-rise var(--duration-hero) var(--ease-out) both;
+}
+.hero-line[data-k="0"] > span {
+  animation-delay: 300ms;
+}
+.hero-line[data-k="1"] > span {
+  animation-delay: calc(300ms + var(--stagger-hero));
+}
+.hero-fx {
+  animation: fade var(--duration-reveal) var(--ease-out) both;
+}
+.hero-fx[data-k="0"] {
+  animation-delay: 800ms;
+}
+.hero-fx[data-k="1"] {
+  animation-delay: calc(800ms + var(--stagger-reveal));
+}
+.hero-fx[data-k="2"] {
+  animation-delay: calc(800ms + 2 * var(--stagger-reveal));
+}
+.staff-lines i {
+  animation: draw var(--duration-draw) var(--ease-out) both;
+}
+.staff-lines i:nth-child(2) {
+  animation-delay: var(--stagger-step);
+}
+.staff-lines i:nth-child(3) {
+  animation-delay: calc(2 * var(--stagger-step));
+}
+.staff-lines i:nth-child(4) {
+  animation-delay: calc(3 * var(--stagger-step));
+}
+.staff-lines i:nth-child(5) {
+  animation-delay: calc(4 * var(--stagger-step));
+}
+.staff-notes b {
+  animation: notepop var(--duration-note) var(--ease-spring) both;
+}
+.staff-notes b:nth-child(1) {
+  animation-delay: 1000ms;
+}
+.staff-notes b:nth-child(2) {
+  animation-delay: calc(1000ms + var(--stagger-step));
+}
+.staff-notes b:nth-child(3) {
+  animation-delay: calc(1000ms + 2 * var(--stagger-step));
+}
+.staff-notes b:nth-child(4) {
+  animation-delay: calc(1000ms + 3 * var(--stagger-step));
+}
+.staff-notes b:nth-child(5) {
+  animation-delay: calc(1000ms + 4 * var(--stagger-step));
+}
+.staff-notes b:nth-child(6) {
+  animation-delay: calc(1000ms + 5 * var(--stagger-step));
+}
+.staff-notes b:nth-child(7) {
+  animation-delay: calc(1000ms + 6 * var(--stagger-step));
+}
+.staff-notes b:nth-child(8) {
+  animation-delay: calc(1000ms + 7 * var(--stagger-step));
+}
+.staff-notes b:nth-child(9) {
+  animation-delay: calc(1000ms + 8 * var(--stagger-step));
+}
 
-  @keyframes draw {
-    from {
-      transform: scaleX(0);
-    }
-    to {
-      transform: scaleX(1);
-    }
+@keyframes draw {
+  from {
+    transform: scaleX(0);
   }
-  @keyframes hero-rise {
-    from {
-      transform: translateY(55%);
-    }
-    to {
-      transform: translateY(0);
-    }
+  to {
+    transform: scaleX(1);
   }
-  @keyframes fade {
-    from {
-      opacity: 0;
-      transform: translateY(12px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
+}
+@keyframes hero-rise {
+  from {
+    transform: translateY(55%);
   }
-  @keyframes notepop {
-    from {
-      opacity: 0;
-      transform: rotate(-22deg) scale(0.2);
-    }
-    to {
-      opacity: 1;
-      transform: rotate(-22deg) scale(1);
-    }
+  to {
+    transform: translateY(0);
   }
-
-  /*
-   * 2) Reveals below the first screen (design section 5.5, technique 2). The hidden start state only exists
-   * under [data-motion], which motion.ts sets after checking JS and motion preference. Without it all is visible.
-   */
-  [data-motion] [data-reveal] {
-    transition:
-      opacity var(--duration-reveal) var(--ease-out),
-      transform var(--duration-reveal) var(--ease-out);
-  }
-  [data-motion] [data-reveal="fade"]:not([data-revealed]) {
+}
+@keyframes fade {
+  from {
     opacity: 0;
     transform: translateY(12px);
   }
-  [data-motion] [data-reveal="rise"] > span {
-    transition: transform var(--duration-hero) var(--ease-out);
+  to {
+    opacity: 1;
+    transform: none;
   }
-  [data-motion] [data-reveal="rise"]:not([data-revealed]) > span {
-    transform: translateY(105%);
+}
+@keyframes notepop {
+  from {
+    opacity: 0;
+    transform: rotate(-22deg) scale(0.2);
   }
-  /* Delay between siblings of the same group (the CSP forbids style="--i:3"). */
-  [data-motion] [data-reveal-group] > :nth-child(2) {
-    transition-delay: var(--stagger-reveal);
+  to {
+    opacity: 1;
+    transform: rotate(-22deg) scale(1);
   }
-  [data-motion] [data-reveal-group] > :nth-child(3) {
-    transition-delay: calc(2 * var(--stagger-reveal));
-  }
-  [data-motion] [data-reveal-group] > :nth-child(4) {
-    transition-delay: calc(3 * var(--stagger-reveal));
-  }
-  [data-motion] [data-reveal-group] > :nth-child(5) {
-    transition-delay: calc(4 * var(--stagger-reveal));
-  }
-  [data-motion] [data-reveal-group] > :nth-child(6) {
-    transition-delay: calc(5 * var(--stagger-reveal));
-  }
+}
+
+/*
+   * 2) Reveals below the first screen (design section 5.5, technique 2). The hidden start state only exists
+   * under [data-motion], which motion.ts sets when the script runs (D-170: always). Without it all is visible.
+   */
+[data-motion] [data-reveal] {
+  transition:
+    opacity var(--duration-reveal) var(--ease-out),
+    transform var(--duration-reveal) var(--ease-out);
+}
+[data-motion] [data-reveal="fade"]:not([data-revealed]) {
+  opacity: 0;
+  transform: translateY(12px);
+}
+[data-motion] [data-reveal="rise"] > span {
+  transition: transform var(--duration-hero) var(--ease-out);
+}
+[data-motion] [data-reveal="rise"]:not([data-revealed]) > span {
+  transform: translateY(105%);
+}
+/* Delay between siblings of the same group (the CSP forbids style="--i:3"). */
+[data-motion] [data-reveal-group] > :nth-child(2) {
+  transition-delay: var(--stagger-reveal);
+}
+[data-motion] [data-reveal-group] > :nth-child(3) {
+  transition-delay: calc(2 * var(--stagger-reveal));
+}
+[data-motion] [data-reveal-group] > :nth-child(4) {
+  transition-delay: calc(3 * var(--stagger-reveal));
+}
+[data-motion] [data-reveal-group] > :nth-child(5) {
+  transition-delay: calc(4 * var(--stagger-reveal));
+}
+[data-motion] [data-reveal-group] > :nth-child(6) {
+  transition-delay: calc(5 * var(--stagger-reveal));
 }
 
 @media print {
@@ -817,7 +822,7 @@
     top: 100%;
   }
 
-  /* List mode (6.8.7): pin off, small viewport or reduced motion. The pinned
+  /* List mode (6.8.7): pin off or a small viewport. The pinned
      rules above never apply here, but this states it outright: all 4 steps
      read complete, with full opacity. */
   [data-timeline]:not([data-pin="on"]) [data-timeline-step] > *,
@@ -827,10 +832,11 @@
 }
 
 /*
- * Pinned mode (6.8.3-6.8.4): only with JavaScript (`data-pin`), motion allowed,
- * and a viewport of at least 20rem x 40rem. Everything here is transform/opacity.
+ * Pinned mode (6.8.3-6.8.4): only with JavaScript (`data-pin`) and a
+ * viewport of at least 20rem x 40rem (D-170: the motion preference is
+ * ignored). Everything here is transform/opacity.
  */
-@media (prefers-reduced-motion: no-preference) and (min-width: 20rem) and (min-height: 40rem) {
+@media (min-width: 20rem) and (min-height: 40rem) {
   [data-timeline][data-pin="on"] {
     height: calc(100svh + 4 * var(--timeline-step-length));
   }
@@ -1207,45 +1213,43 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  [data-motion] [data-reveal="grow"]:not([data-revealed]) .meter .on {
+[data-motion] [data-reveal="grow"]:not([data-revealed]) .meter .on {
+  transform: scaleY(0);
+}
+[data-motion] [data-reveal="grow"][data-revealed] .meter .on {
+  animation: grow var(--duration-meter) var(--ease-out) 150ms both;
+}
+[data-motion] [data-reveal="grow"][data-revealed] .meter .on:nth-child(2) {
+  animation-delay: calc(150ms + var(--stagger-step));
+}
+[data-motion] [data-reveal="grow"][data-revealed] .meter .on:nth-child(3) {
+  animation-delay: calc(150ms + 2 * var(--stagger-step));
+}
+@keyframes grow {
+  from {
     transform: scaleY(0);
   }
-  [data-motion] [data-reveal="grow"][data-revealed] .meter .on {
-    animation: grow var(--duration-meter) var(--ease-out) 150ms both;
+  to {
+    transform: scaleY(1);
   }
-  [data-motion] [data-reveal="grow"][data-revealed] .meter .on:nth-child(2) {
-    animation-delay: calc(150ms + var(--stagger-step));
-  }
-  [data-motion] [data-reveal="grow"][data-revealed] .meter .on:nth-child(3) {
-    animation-delay: calc(150ms + 2 * var(--stagger-step));
-  }
-  @keyframes grow {
-    from {
-      transform: scaleY(0);
-    }
-    to {
-      transform: scaleY(1);
-    }
-  }
+}
 
-  /* Decorative drift of the desktop screenshot while scrolling (design section 6.6): +-3 % over a base
-     scale of 1.10 so no empty edge shows. Without support (Firefox < 160) or with reduced motion: still. */
-  @supports (animation-timeline: view()) {
-    .shot {
-      animation-name: shot-drift;
-      animation-timing-function: linear;
-      animation-fill-mode: both;
-      animation-timeline: view();
-    }
+/* Decorative drift of the desktop screenshot while scrolling (design section 6.6): +-3 % over a base
+     scale of 1.10 so no empty edge shows. Without animation-timeline support: still. */
+@supports (animation-timeline: view()) {
+  .shot {
+    animation-name: shot-drift;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: view();
   }
-  @keyframes shot-drift {
-    from {
-      transform: scale(1.1) translateY(-3%);
-    }
-    to {
-      transform: scale(1.1) translateY(3%);
-    }
+}
+@keyframes shot-drift {
+  from {
+    transform: scale(1.1) translateY(-3%);
+  }
+  to {
+    transform: scale(1.1) translateY(3%);
   }
 }
 
@@ -1259,8 +1263,8 @@
  * Skills terminal (D-167): one violet window per level group. Each skill is a
  * `$ name` line; `backedBy` follows as `# …` comment lines. The list is
  * complete without JavaScript: the typing entrance only exists under
- * [data-terminals-live], which skills.ts sets after checking JS and motion
- * preference. Only `transform` and `opacity` move; the block cursor blinks
+ * [data-terminals-live], which skills.ts sets when the script runs
+ * (D-170: always). Only `transform` and `opacity` move; the block cursor blinks
  * 3 times and stays solid (finite, R23.7).
  */
 @layer components {
@@ -1318,42 +1322,40 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  [data-terminals-live] [data-term-line]:not([data-typed]) {
+[data-terminals-live] [data-term-line]:not([data-typed]) {
+  opacity: 0;
+  transform: translateY(6px);
+}
+[data-terminals-live] [data-term-line][data-typed] {
+  animation: term-in var(--duration-reveal) var(--ease-out) both;
+}
+[data-terminals-live] [data-term-line][data-active] .term-text::after {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 1.05em;
+  margin-left: 0.35em;
+  vertical-align: text-bottom;
+  background: var(--color-signal);
+  animation: term-caret 480ms var(--ease-out) 3;
+}
+@keyframes term-in {
+  from {
     opacity: 0;
     transform: translateY(6px);
   }
-  [data-terminals-live] [data-term-line][data-typed] {
-    animation: term-in var(--duration-reveal) var(--ease-out) both;
+  to {
+    opacity: 1;
+    transform: none;
   }
-  [data-terminals-live] [data-term-line][data-active] .term-text::after {
-    content: "";
-    display: inline-block;
-    width: 0.55em;
-    height: 1.05em;
-    margin-left: 0.35em;
-    vertical-align: text-bottom;
-    background: var(--color-signal);
-    animation: term-caret 480ms var(--ease-out) 3;
+}
+@keyframes term-caret {
+  0%,
+  100% {
+    opacity: 1;
   }
-  @keyframes term-in {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-  @keyframes term-caret {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0;
-    }
+  50% {
+    opacity: 0;
   }
 }
 
@@ -1420,23 +1422,21 @@
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .mascot-toggle-ring {
-    transition: transform var(--duration-ui) var(--ease-out);
+.mascot-toggle-ring {
+  transition: transform var(--duration-ui) var(--ease-out);
+}
+/* Color answers at once; only the ring moves (design section 6.9, row 3). */
+@media (hover: hover) {
+  .mascot-toggle:hover {
+    color: var(--color-text);
   }
-  /* Color answers at once; only the ring moves (design section 6.9, row 3). */
-  @media (hover: hover) {
-    .mascot-toggle:hover {
-      color: var(--color-text);
-    }
-    .mascot-toggle:hover .mascot-toggle-ring {
-      transform: scale(1.08);
-    }
+  .mascot-toggle:hover .mascot-toggle-ring {
+    transform: scale(1.08);
   }
-  .mascot-toggle:active .mascot-toggle-ring {
-    transform: translateY(1px);
-    transition-duration: var(--duration-press);
-  }
+}
+.mascot-toggle:active .mascot-toggle-ring {
+  transform: translateY(1px);
+  transition-duration: var(--duration-press);
 }
 
 @media print {

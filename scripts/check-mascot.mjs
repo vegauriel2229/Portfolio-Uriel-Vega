@@ -8,7 +8,8 @@
 // 2. hopTo keeps the instant branch ONLY for the off-screen case (!dogVisible).
 // 3. blockers() still skips viewport-fixed controls (no document position)
 //    without dropping the in-flow text/control coverage (R25.3).
-// 4. Reduced motion stays still: startStill sits (FRAME_SIT) and never flies.
+// 4. D-170: no reduced-motion gate remains — the mascot always hops,
+//    startStill is gone and hide() always plays the burst on screen.
 
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -58,10 +59,11 @@ check(
   ),
 );
 
-// 4. Reduced motion: still sitting, no flight.
-const still = block("startStill");
-check("startStill sits (FRAME_SIT)", still.includes("FRAME_SIT"));
-check("startStill never flies", !still.includes("fly("));
+// 4. D-170: motion preference ignored — always hopping, burst on hide.
+const hide = block("hide");
+check("no reduced-motion gate", !src.includes("prefers-reduced-motion"));
+check("startStill removed", !src.includes("startStill"));
+check("hide() always bursts on screen", hide.includes("burst(target"));
 
 if (failures > 0) {
   console.error(`\ncheck-mascot: ${failures} failing assertion(s)`);
