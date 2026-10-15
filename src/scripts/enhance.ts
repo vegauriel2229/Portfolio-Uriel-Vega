@@ -2,6 +2,7 @@
 // No cookies, no storage, no network (R17.7).
 
 import { initMotion } from "@/scripts/motion";
+import { initTimeline } from "@/scripts/timeline";
 
 const SECTION_IDS = [
   "home",
@@ -11,7 +12,6 @@ const SECTION_IDS = [
   "skills",
   "contact",
 ];
-const TIMELINE_STRIP = "-35% 0px -55% 0px";
 
 /** Mobile menu: close it when a section is chosen and with Escape (focus returns to its button). */
 function enhanceMenu(): void {
@@ -26,34 +26,6 @@ function enhanceMenu(): void {
     menu.open = false;
     menu.querySelector("summary")?.focus();
   });
-}
-
-/** AI timeline: mark the step that crosses the reading strip. Purely visual (D-103). */
-function enhanceTimeline(): void {
-  const list = document.querySelector<HTMLElement>("[data-timeline]");
-  if (!list) return;
-
-  const steps = Array.from(list.children) as HTMLElement[];
-  const setActive = (index: number): void => {
-    steps.forEach((step, position) => {
-      step.toggleAttribute("data-active", position === index);
-      step.toggleAttribute("data-done", position < index);
-    });
-  };
-
-  list.classList.add("js");
-  setActive(0);
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting)
-          setActive(steps.indexOf(entry.target as HTMLElement));
-      }
-    },
-    { rootMargin: TIMELINE_STRIP },
-  );
-  steps.forEach((step) => observer.observe(step));
 }
 
 /** Id of the last section whose top edge is at or above the anchor line (the scroll-padding under the header). */
@@ -85,5 +57,5 @@ function enhanceLanguageSwitch(): void {
 
 enhanceMenu();
 initMotion();
-enhanceTimeline();
+initTimeline();
 enhanceLanguageSwitch();

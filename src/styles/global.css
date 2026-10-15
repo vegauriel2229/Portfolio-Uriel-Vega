@@ -69,8 +69,6 @@
   --text-h4--line-height: 1.3;
   --text-h4-sm: 1.2rem;
   --text-h4-sm--line-height: 1.3;
-  --text-h4-active: 1.45rem;
-  --text-h4-active--line-height: 1.3;
   --text-lead: 1.2rem;
   --text-lead--line-height: 1.4;
   --text-body: 1.0625rem;
@@ -111,6 +109,7 @@
   --duration-progress: 450ms;
   --duration-reveal: 600ms;
   --duration-chip: 650ms;
+  --duration-baton: 900ms;
   --duration-hero: 800ms;
   --stagger-step: 90ms;
   --stagger-hero: 110ms;
@@ -559,69 +558,584 @@
 }
 
 /*
- * AI timeline (kept from the base UI until T7 rebuilds it). Without JavaScript every step reads the same
- * and the line is complete. With JavaScript (class `js`) enhance.ts marks the step in view (data-active).
+ * AI timeline "Orquesta" (design section 6.8). Complete as a list without JavaScript:
+ * every step, note and agent reads in its final lit state. JavaScript only adds `data-step`
+ * (active step), `data-play` (forward entrances) and `data-pin` (sticky stage).
+ * The team list lives inside step 2 (R24.5). Muted text keeps its contrast: never opacity (6.2.1).
  */
 @layer components {
-  .timeline > li {
+  .tl {
     position: relative;
-    padding-left: 2.5rem;
-    padding-bottom: 2rem;
+    overflow: clip;
   }
-  .timeline > li:last-child {
-    padding-bottom: 0;
+  .tl-stage {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-md);
   }
-  .timeline > li::before,
-  .timeline > li::after {
-    content: "";
-    position: absolute;
-    left: 0.5rem;
-    top: 1.5rem;
-    bottom: -0.3rem;
-    width: 2px;
+
+  /* Score strip (4 notes + rail) and counter: pinned stage only, and only with JavaScript. */
+  .tl-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
   }
-  .timeline > li::before {
-    background: var(--color-line);
-  }
-  .timeline > li::after {
-    background: var(--color-signal);
-    transform: scaleY(0);
-    transform-origin: top;
-  }
-  .timeline > li:last-child::before,
-  .timeline > li:last-child::after {
+  .tl-score {
     display: none;
+    position: relative;
+    flex: 1;
   }
-  .timeline-dot {
-    position: absolute;
-    left: 0;
-    top: 0.3rem;
-    width: 18px;
-    height: 18px;
-    border-radius: var(--radius-full);
-    border: 2px solid var(--color-signal);
-    background: var(--color-surface);
-  }
-  .timeline.js > li:not([data-active]) {
+  .tl-counter {
+    display: none;
+    margin: 0;
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
     color: var(--color-muted);
   }
-  .timeline.js > li[data-active] h4 {
-    font-size: var(--text-h4-active);
+  [data-step] .tl-counter {
+    display: block;
   }
-  .timeline.js > li[data-active] .timeline-dot {
+
+  /* List mode (6.8.7): vertical rail on the left, one note per step. */
+  .tl-cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .tl-card {
+    position: relative;
+    padding-bottom: var(--space-stack-lg);
+    padding-left: 2.5rem;
+    color: var(--color-text);
+  }
+  .tl-card:last-child {
+    padding-bottom: 0;
+  }
+  .tl-card::before {
+    content: "";
+    position: absolute;
+    top: 1.75rem;
+    bottom: -0.25rem;
+    left: 0.5rem;
+    width: 2px;
+    background: var(--color-dim);
+  }
+  .tl-card:last-child::before {
+    display: none;
+  }
+  .tl-marker {
+    position: absolute;
+    top: 0.2rem;
+    left: 0;
+    width: 24px;
+    height: 18px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    color: var(--color-signal);
+    background-color: currentColor;
+    transform: rotate(-22deg);
+  }
+  .tl-marker::after {
+    content: "";
+    position: absolute;
+    top: -15px;
+    right: 2px;
+    width: 2px;
+    height: 22px;
+    border-radius: 2px;
+    background-color: currentColor;
+  }
+  .tl-card-title {
+    font-size: var(--text-h4);
+    line-height: var(--text-h4--line-height);
+  }
+  .tl-card-body {
+    max-width: 58ch;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+  .tl-card .meter {
+    margin-top: 0.75rem;
+  }
+
+  /* The team: 2 columns in base, 3 from 600 px (6.8.7). Lit by default (final state). */
+  .tl-team {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tl-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 3rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+  .tl-chip[data-director] {
+    border-width: 2px;
+    border-color: var(--color-accent);
+  }
+  .tl-name {
+    font-family: var(--font-display);
+    font-size: var(--text-small);
+    font-weight: 500;
+    line-height: var(--text-small--line-height);
+  }
+  .tl-eq {
+    display: inline-flex;
+    flex: none;
+    align-items: flex-end;
+    gap: 2px;
+    height: 20px;
+  }
+  .tl-eq i {
+    width: 3px;
+    border-radius: 1px;
     background: var(--color-signal);
-    box-shadow:
-      0 0 0 4px var(--color-surface),
-      0 0 0 6px var(--color-signal);
+    transform-origin: bottom;
   }
-  .timeline.js > li[data-done]::after {
-    transform: scaleY(1);
+  .tl-eq i:nth-child(1) {
+    height: 11px;
+  }
+  .tl-eq i:nth-child(2) {
+    height: 20px;
+  }
+  .tl-eq i:nth-child(3) {
+    height: 14px;
+  }
+  .tl-baton {
+    flex: none;
+    margin-left: auto;
+    color: var(--color-signal);
+  }
+
+  /* With JavaScript the step in view reads in full and the rest in muted (instant, 6.8.7). */
+  .tl-stage[data-step="1"] .tl-card:not([data-timeline-step="1"]),
+  .tl-stage[data-step="2"] .tl-card:not([data-timeline-step="2"]),
+  .tl-stage[data-step="3"] .tl-card:not([data-timeline-step="3"]),
+  .tl-stage[data-step="4"] .tl-card:not([data-timeline-step="4"]) {
+    color: var(--color-muted);
+  }
+  .tl-stage[data-step] .tl-marker {
+    color: var(--color-line);
+    background-color: transparent;
+  }
+  .tl-stage[data-step="1"] [data-timeline-step="1"] .tl-marker,
+  .tl-stage[data-step="2"] [data-timeline-step="2"] .tl-marker,
+  .tl-stage[data-step="3"] [data-timeline-step="3"] .tl-marker,
+  .tl-stage[data-step="4"] [data-timeline-step="4"] .tl-marker {
+    color: var(--color-signal);
+    background-color: currentColor;
+  }
+
+  /* "Silent" team until step 3, lit from SDD on (instant; shape and text carry the state, R14.6). */
+  .tl-stage[data-step="1"] .tl-chip,
+  .tl-stage[data-step="2"] .tl-chip {
+    border-width: 1px;
+    border-color: var(--color-dim);
+    color: var(--color-muted);
+  }
+  .tl-stage[data-step="1"] .tl-eq i,
+  .tl-stage[data-step="2"] .tl-eq i {
+    height: 4px;
+    background: var(--color-dim);
+  }
+  .tl-stage[data-step="1"] .tl-baton,
+  .tl-stage[data-step="2"] .tl-baton {
+    color: var(--color-dim);
+  }
+
+  /* Usage hint: only with JavaScript, hidden on the last step (6.8.5). */
+  .tl-foot {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .tl-hint {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+    color: var(--color-muted);
+  }
+  .tl-stage[data-step]:not([data-step="4"]) .tl-hint {
+    display: inline-flex;
+  }
+  .tl-hint-arrow {
+    transform: rotate(90deg);
+  }
+  /* Empty corner (12rem x 5rem) so the stage never covers the floating WhatsApp button (R24.11). */
+  .tl-spacer {
+    display: none;
+  }
+  [data-pin="on"] .tl-spacer {
+    display: block;
+    flex: none;
+    width: 12rem;
+    height: 5rem;
+  }
+
+  /* Sentinels never take room. In list mode they split the track in quartiles. */
+  .tl-sentinel {
+    position: absolute;
+    left: 0;
+    width: 2px;
+    height: 2px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  [data-timeline-sentinel="1"] {
+    top: 0;
+  }
+  [data-timeline-sentinel="2"] {
+    top: 33%;
+  }
+  [data-timeline-sentinel="3"] {
+    top: 66%;
+  }
+  [data-timeline-sentinel="4"] {
+    top: 100%;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .timeline > li::after {
+/*
+ * Pinned mode (6.8.3-6.8.4): only with JavaScript (`data-pin`), motion allowed,
+ * and a viewport of at least 20rem x 40rem. Everything here is transform/opacity.
+ */
+@media (prefers-reduced-motion: no-preference) and (min-width: 20rem) and (min-height: 40rem) {
+  [data-timeline][data-pin="on"] {
+    height: calc(100svh + 4 * var(--timeline-step-length));
+  }
+  [data-timeline][data-pin="on"] .tl-stage {
+    position: sticky;
+    top: calc(var(--size-header) + 0.75rem);
+    z-index: 41;
+    height: calc(100svh - var(--size-header) - 1.5rem);
+    overflow: clip;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    padding: 1.25rem;
+    border: 1px solid var(--color-hair);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+  }
+  [data-timeline][data-pin="on"] .tl-top {
+    display: flex;
+  }
+  /* Score: hollow notes fill up to the active step; the rail steps with it. */
+  [data-timeline][data-pin="on"] .tl-score {
+    display: block;
+  }
+  [data-timeline][data-pin="on"] .tl-notes {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 2rem;
+  }
+  [data-timeline][data-pin="on"] .tl-note {
+    position: relative;
+    width: 22px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    color: var(--color-line);
+    transform: rotate(-22deg);
+  }
+  [data-timeline][data-pin="on"] .tl-note::after {
+    content: "";
+    position: absolute;
+    top: -27px;
+    right: -1px;
+    width: 2px;
+    height: 30px;
+    border-radius: 2px;
+    background-color: currentColor;
+  }
+  [data-timeline][data-pin="on"][data-step="1"] .tl-note:first-child,
+  [data-timeline][data-pin="on"][data-step="2"] .tl-note:nth-child(-n + 2),
+  [data-timeline][data-pin="on"][data-step="3"] .tl-note:nth-child(-n + 3),
+  [data-timeline][data-pin="on"][data-step="4"] .tl-note {
+    color: var(--color-signal);
+    background-color: currentColor;
+  }
+  [data-timeline][data-pin="on"] .tl-rail {
+    position: absolute;
+    top: calc(2rem + 7px);
+    right: 11px;
+    left: 11px;
+    height: 2px;
+    background: var(--color-dim);
+  }
+  [data-timeline][data-pin="on"] .tl-rail-fill {
+    position: absolute;
+    inset: 0;
+    background: var(--color-signal);
+    transform: scaleX(0);
+    transform-origin: left;
     transition: transform var(--duration-progress) var(--ease-io);
+  }
+  [data-timeline][data-pin="on"][data-step="2"] .tl-rail-fill {
+    transform: scaleX(0.34);
+  }
+  [data-timeline][data-pin="on"][data-step="3"] .tl-rail-fill {
+    transform: scaleX(0.67);
+  }
+  [data-timeline][data-pin="on"][data-step="4"] .tl-rail-fill {
+    transform: scaleX(1);
+  }
+
+  /* Ficha: title and body stack in their own rows, each sized by its tallest step;
+     only opacity changes, never the flow, so there is no reflow or CLS. */
+  [data-timeline][data-pin="on"] .tl-cards {
+    display: grid;
+    grid-template-areas: "title" "body" "meter" "equipo";
+    grid-template-rows: auto 1fr auto auto;
+    min-height: 0;
+  }
+  /* The items lift out of their <li> so the team can sit in its own area while staying
+     inside step 2 for assistive technology. The <li> keeps no visual style of its own. */
+  [data-timeline][data-pin="on"] .tl-card {
+    display: contents;
+  }
+  [data-timeline][data-pin="on"] .tl-card::before,
+  [data-timeline][data-pin="on"] .tl-marker {
+    display: none;
+  }
+  [data-timeline][data-pin="on"] .tl-card-title,
+  [data-timeline][data-pin="on"] .tl-card-body,
+  [data-timeline][data-pin="on"] .tl-card .meter {
+    opacity: 0;
+  }
+  [data-timeline][data-pin="on"] .tl-card-title {
+    grid-area: title;
+  }
+  [data-timeline][data-pin="on"] .tl-card-body {
+    grid-area: body;
+  }
+  [data-timeline][data-pin="on"] .tl-card .meter {
+    grid-area: meter;
+  }
+  [data-timeline][data-pin="on"][data-step="1"]
+    [data-timeline-step="1"]
+    > :not(.tl-team),
+  [data-timeline][data-pin="on"][data-step="2"]
+    [data-timeline-step="2"]
+    > :not(.tl-team),
+  [data-timeline][data-pin="on"][data-step="3"]
+    [data-timeline-step="3"]
+    > :not(.tl-team),
+  [data-timeline][data-pin="on"][data-step="4"]
+    [data-timeline-step="4"]
+    > :not(.tl-team) {
+    opacity: 1;
+  }
+  [data-timeline][data-pin="on"] .tl-card-title {
+    align-self: end;
+    font-size: var(--text-step);
+    line-height: var(--text-step--line-height);
+  }
+  /* Team area: empty at step 1, lit from step 3 on. */
+  [data-timeline][data-pin="on"] .tl-team {
+    grid-area: equipo;
+    margin-top: 1.25rem;
+    opacity: 0;
+  }
+  [data-timeline][data-pin="on"][data-step="2"] .tl-team,
+  [data-timeline][data-pin="on"][data-step="3"] .tl-team,
+  [data-timeline][data-pin="on"][data-step="4"] .tl-team {
+    opacity: 1;
+  }
+
+  @media (width >= 37.5rem) {
+    [data-timeline][data-pin="on"] .tl-team {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (width >= theme(--breakpoint-lg)) {
+    [data-timeline][data-pin="on"] .tl-stage {
+      padding: 2.5rem;
+    }
+    [data-timeline][data-pin="on"] .tl-cards {
+      grid-template-areas:
+        "title equipo"
+        "body equipo"
+        "meter equipo";
+      grid-template-columns: 5fr 7fr;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 2rem;
+    }
+    [data-timeline][data-pin="on"] .tl-team {
+      align-self: center;
+      margin-top: 0;
+    }
+    /* The director conducts from the middle, surrounded by the 8 agents (6.8.4). */
+    [data-timeline][data-pin="on"] .tl-team > li:first-child {
+      grid-area: 2 / 2;
+    }
+  }
+
+  /* Forward entrances, staggered per chip with the step token (5.5: no inline styles). */
+  [data-timeline] .tl-team > li:nth-child(1) {
+    --d: 0ms;
+  }
+  [data-timeline] .tl-team > li:nth-child(2) {
+    --d: calc(1 * var(--stagger-step));
+  }
+  [data-timeline] .tl-team > li:nth-child(3) {
+    --d: calc(2 * var(--stagger-step));
+  }
+  [data-timeline] .tl-team > li:nth-child(4) {
+    --d: calc(3 * var(--stagger-step));
+  }
+  [data-timeline] .tl-team > li:nth-child(5) {
+    --d: calc(4 * var(--stagger-step));
+  }
+  [data-timeline] .tl-team > li:nth-child(6) {
+    --d: calc(5 * var(--stagger-step));
+  }
+  [data-timeline] .tl-team > li:nth-child(7) {
+    --d: calc(6 * var(--stagger-step));
+  }
+  [data-timeline] .tl-team > li:nth-child(8) {
+    --d: calc(7 * var(--stagger-step));
+  }
+  [data-timeline] .tl-team > li:nth-child(9) {
+    --d: calc(8 * var(--stagger-step));
+  }
+  [data-play="2"] .tl-chip {
+    animation: chip-in var(--duration-chip) var(--ease-spring) var(--d, 0ms)
+      both;
+  }
+  [data-play="3"] .tl-chip {
+    animation: chip-lit var(--duration-chip) var(--ease-spring) var(--d, 0ms)
+      both;
+  }
+  [data-play="3"] .tl-eq i {
+    animation: eq-bounce var(--duration-progress) var(--ease-io) var(--d, 0ms) 3;
+  }
+  /* The baton waves twice when the agents light up (6.8.5). */
+  [data-play="3"] .tl-baton {
+    animation: baton-wave var(--duration-baton) var(--ease-io) 2;
+    transform-origin: 50% 80%;
+  }
+  [data-play="4"] .tl-card .meter .on {
+    animation: grow var(--duration-meter) var(--ease-out) both;
+  }
+  @keyframes chip-in {
+    from {
+      opacity: 0.4;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes chip-lit {
+    from {
+      transform: scale(0.94);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+  @keyframes eq-bounce {
+    from {
+      transform: scaleY(0.2);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+  @keyframes baton-wave {
+    0% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-16deg);
+    }
+    75% {
+      transform: rotate(14deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+
+  /* Continuous rail where the browser supports scroll-driven animations (decorative). */
+  @supports (animation-timeline: view()) {
+    [data-timeline][data-pin="on"] {
+      view-timeline-name: --tl-track;
+      view-timeline-axis: block;
+    }
+    [data-timeline][data-pin="on"] .tl-rail-fill {
+      animation: tl-rail linear both;
+      animation-timeline: --tl-track;
+      animation-range: contain 0% contain 100%;
+    }
+  }
+  @keyframes tl-rail {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Pinned sentinel run: one step length apart down the track (6.8.6). */
+  [data-timeline][data-pin="on"] [data-timeline-sentinel="1"] {
+    top: 50svh;
+  }
+  [data-timeline][data-pin="on"] [data-timeline-sentinel="2"] {
+    top: calc(50svh + var(--timeline-step-length));
+  }
+  [data-timeline][data-pin="on"] [data-timeline-sentinel="3"] {
+    top: calc(50svh + 2 * var(--timeline-step-length));
+  }
+  [data-timeline][data-pin="on"] [data-timeline-sentinel="4"] {
+    top: calc(50svh + 3 * var(--timeline-step-length));
+  }
+}
+
+@media (width >= 37.5rem) {
+  .tl-team {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media print {
+  [data-timeline] {
+    height: auto !important;
+  }
+  [data-timeline] .tl-stage {
+    position: static !important;
+    height: auto !important;
+    border: none;
+    background: none;
+  }
+  [data-timeline] .tl-score,
+  [data-timeline] .tl-hint,
+  [data-timeline] .tl-sentinel,
+  [data-timeline] .tl-spacer {
+    display: none !important;
+  }
+  [data-timeline] [data-timeline-step] > *,
+  [data-timeline] .tl-team {
+    opacity: 1 !important;
   }
 }
 

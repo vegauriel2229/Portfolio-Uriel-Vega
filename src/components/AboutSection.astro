@@ -1,4 +1,5 @@
 ---
+import AiTimeline from "@/components/AiTimeline.astro";
 import type { Content } from "@/lib/content";
 import { localize, type Locale } from "@/lib/i18n";
 
@@ -60,7 +61,7 @@ const aiParagraph = profile.about.paragraphs.find(
       ))}
     </div>
 
-    {/* AI block (R6.3, D-104). The timeline "Orquesta" goes below it in T7, outside this text. */}
+    {/* AI block (R6.3, D-104): heading and paragraph in normal flow, then the Orchestra timeline (T7, R24). */}
     <section aria-labelledby="ai-title" class="mt-12">
       <h3 id="ai-title" class="text-h3">
         {localize(ui.timeline.title, locale)}
@@ -73,6 +74,9 @@ const aiParagraph = profile.about.paragraphs.find(
           {aiParagraph[locale]}
         </p>
       )}
+      <div class="mt-8">
+        <AiTimeline locale={locale} content={content} />
+      </div>
     </section>
   </div>
 </section>

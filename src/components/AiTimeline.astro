@@ -1,4 +1,7 @@
 ---
+import ArrowIcon from "@/components/icons/ArrowIcon.astro";
+import BatonIcon from "@/components/icons/BatonIcon.astro";
+import LevelMeter from "@/components/LevelMeter.astro";
 import type { Content } from "@/lib/content";
 import { fillTemplate, localize, type Locale } from "@/lib/i18n";
 
@@ -10,10 +13,12 @@ interface Props {
 const { locale, content } = Astro.props;
 const { ui, profile, skills, skillLevels } = content;
 
-// Step 4 is composed from the data, so it follows the skill level if it changes (D-105, D-110).
+// Step 4 is composed from the data, so it follows the skill level if it changes (R24.15).
 // The guard in lib/content.ts guarantees that this skill exists.
 const aiSkill = skills.find((skill) => skill.id === "ai-development");
 const level = aiSkill ? skillLevels[aiSkill.level] : undefined;
+const LEVEL_BARS = { advanced: 3, intermediate: 2, basic: 1 } as const;
+const lit = aiSkill ? LEVEL_BARS[aiSkill.level] : 3;
 const todayTitle =
   aiSkill && level
     ? fillTemplate(localize(ui.timeline.step4.title, locale), {
@@ -22,60 +27,118 @@ const todayTitle =
       })
     : "";
 
-// Minimal adjustment for the new roles (T4); the final shape of the timeline arrives in T7.
-const roles = Object.values(ui.timeline.roles);
-const aiParagraph = profile.about.paragraphs.find(
-  (paragraph) => paragraph.id === "ia-sdd",
-);
+// The team in DOM order (D-138): the director first, then the 8 agents. No "Avengers" (D-139).
+const TEAM_ORDER = [
+  "director",
+  "analyst",
+  "architect",
+  "designer",
+  "frontend",
+  "backend",
+  "qa",
+  "security",
+  "devops",
+] as const;
+const team = TEAM_ORDER.map((id) => ({
+  id,
+  label: localize(ui.timeline.roles[id], locale),
+}));
+
+const TOTAL_STEPS = 4;
+const stepTitles = [
+  localize(ui.timeline.step1.title, locale),
+  localize(ui.timeline.step2.title, locale),
+  localize(ui.timeline.step3.title, locale),
+  todayTitle,
+];
+const firstCounter = fillTemplate(localize(ui.timeline.stepCounter, locale), {
+  n: "1",
+  total: String(TOTAL_STEPS),
+});
 ---
 
-<section
-  aria-labelledby="ai-title"
-  class="grid gap-8 lg:grid-cols-[5fr_7fr] lg:gap-12"
->
-  <div class="lg:sticky lg:top-24 lg:self-start">
-    <h3 id="ai-title" class="text-h3">
-      {localize(ui.timeline.title, locale)}
-    </h3>
-    {aiParagraph && <p class="mt-4 max-w-[58ch]">{aiParagraph[locale]}</p>}
-  </div>
-  <ol role="list" data-timeline class="timeline">
-    <li>
-      <span aria-hidden="true" class="timeline-dot"></span>
-      <h4 class="text-h4">{localize(ui.timeline.step1.title, locale)}</h4>
-    </li>
-    <li>
-      <span aria-hidden="true" class="timeline-dot"></span>
-      <h4 class="text-h4">{localize(ui.timeline.step2.title, locale)}</h4>
-      <ul
-        role="list"
-        aria-label={localize(ui.timeline.rolesLabel, locale)}
-        class="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 min-[600px]:grid-cols-3"
-      >
-        {roles.map((role) => (
-          <li class="flex items-center gap-2">
-            <span
-              aria-hidden="true"
-              class="size-2 shrink-0 rounded-full bg-signal"
-            />
-            {localize(role, locale)}
-          </li>
-        ))}
-      </ul>
-    </li>
-    <li>
-      <span aria-hidden="true" class="timeline-dot"></span>
-      <h4 class="text-h4">{localize(ui.timeline.step3.title, locale)}</h4>
-      <p class="mt-2 max-w-[58ch]">
-        {localize(profile.about.sddExplanation, locale)}
+<div data-timeline class="tl">
+  <div
+    data-timeline-stage
+    data-step-status={localize(ui.timeline.stepStatus, locale)}
+    data-lit-status={localize(ui.timeline.litStatus, locale)}
+    data-counter={localize(ui.timeline.stepCounter, locale)}
+    class="tl-stage"
+  >
+    <div class="tl-top">
+      <div aria-hidden="true" data-timeline-score class="tl-score">
+        <div class="tl-rail">
+          <i class="tl-rail-fill"></i>
+        </div>
+        <div class="tl-notes">
+          {[1, 2, 3, 4].map((note) => (
+            <span class="tl-note" data-note={note}></span>
+          ))}
+        </div>
+      </div>
+      <p aria-hidden="true" data-timeline-counter class="tl-counter">
+        {firstCounter}
       </p>
-    </li>
-    <li>
-      <span aria-hidden="true" class="timeline-dot"></span>
-      <h4 class="text-h4">{todayTitle}</h4>
-      {level && (
-        <p class="mt-2 max-w-[58ch]">{localize(level.definition, locale)}</p>
-      )}
-    </li>
-  </ol>
-</section>
+    </div>
+    <ol role="list" data-timeline-steps class="tl-cards">
+      <li class="tl-card" data-timeline-step="1" data-title={stepTitles[0]}>
+        <span aria-hidden="true" class="tl-marker"></span>
+        <h4 class="tl-card-title">{stepTitles[0]}</h4>
+      </li>
+      <li class="tl-card" data-timeline-step="2" data-title={stepTitles[1]}>
+        <span aria-hidden="true" class="tl-marker"></span>
+        <h4 class="tl-card-title">{stepTitles[1]}</h4>
+        <ul
+          role="list"
+          aria-label={localize(ui.timeline.rolesLabel, locale)}
+          class="tl-team"
+        >
+          {team.map((member) => (
+            <li
+              class="tl-chip"
+              data-director={member.id === "director" || undefined}
+            >
+              <span aria-hidden="true" class="tl-eq">
+                <i></i>
+                <i></i>
+                <i></i>
+              </span>
+              <span class="tl-name">{member.label}</span>
+              {member.id === "director" && <BatonIcon class="tl-baton" />}
+            </li>
+          ))}
+        </ul>
+      </li>
+      <li class="tl-card" data-timeline-step="3" data-title={stepTitles[2]}>
+        <span aria-hidden="true" class="tl-marker"></span>
+        <h4 class="tl-card-title">{stepTitles[2]}</h4>
+        <p class="tl-card-body">
+          {localize(profile.about.sddExplanation, locale)}
+        </p>
+      </li>
+      <li class="tl-card" data-timeline-step="4" data-title={stepTitles[3]}>
+        <span aria-hidden="true" class="tl-marker"></span>
+        <h4 class="tl-card-title">{stepTitles[3]}</h4>
+        {level && (
+          <p class="tl-card-body">{localize(level.definition, locale)}</p>
+        )}
+        <LevelMeter lit={lit} />
+      </li>
+    </ol>
+    <div class="tl-foot">
+      <p data-timeline-hint class="tl-hint">
+        {localize(ui.timeline.scrollHint, locale)}
+        <ArrowIcon class="tl-hint-arrow" />
+      </p>
+      <span aria-hidden="true" class="tl-spacer"></span>
+    </div>
+    <p class="sr-only" aria-live="polite" data-timeline-status></p>
+  </div>
+  {[1, 2, 3, 4].map((sentinel) => (
+    <i
+      aria-hidden="true"
+      data-timeline-sentinel={sentinel}
+      class="tl-sentinel"
+    ></i>
+  ))}
+</div>

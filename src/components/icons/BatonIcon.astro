@@ -1,0 +1,24 @@
+---
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<!-- Conductor's baton of the Orchestra director (design section 6.8.5): 30 px, signal color. -->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 30 30"
+  width="30"
+  height="30"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="3"
+  stroke-linecap="round"
+  aria-hidden="true"
+  focusable="false"
+  class={className}
+>
+  <path d="M11 25 19 7"></path>
+  <circle cx="20" cy="5" r="2.6" fill="currentColor" stroke="none"></circle>
+</svg>
