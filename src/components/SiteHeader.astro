@@ -2,6 +2,8 @@
 import type { Content } from "@/lib/content";
 import { localize, type Locale } from "@/lib/i18n";
 import MenuIcon from "@/components/icons/MenuIcon.astro";
+import PawIcon from "@/components/icons/PawIcon.astro";
+import PawOffIcon from "@/components/icons/PawOffIcon.astro";
 import LanguageSwitcher from "@/components/LanguageSwitcher.astro";
 
 interface Props {
@@ -25,7 +27,7 @@ const items = [
   data-tone="deep"
   class="sticky top-0 z-50 border-b border-hair bg-bg-deep text-text [@media(max-height:30rem)]:static"
 >
-  <div class="wrap flex min-h-(--size-header) items-center gap-2 lg:gap-3">
+  <div class="wrap flex min-h-(--size-header) items-center gap-1 min-[22rem]:gap-2 lg:gap-3">
     <a
       href="#home"
       aria-label={localize(ui.home.logoLabel, locale)}
@@ -50,9 +52,14 @@ const items = [
         ))}
       </ul>
       <details data-menu class="lg:hidden">
-        <summary class="tap tap-lift inline-flex min-h-(--size-touch) cursor-pointer list-none items-center gap-2 rounded-full border border-line px-4 text-label font-bold hover:border-text [&::-webkit-details-marker]:hidden">
+        <summary
+          aria-label={localize(ui.nav.menu, locale)}
+          class="tap tap-lift inline-flex min-h-(--size-touch) w-(--size-touch) cursor-pointer list-none items-center justify-center gap-0 rounded-full border border-line px-0 text-label font-bold min-[22rem]:w-auto min-[22rem]:gap-2 min-[22rem]:px-4 hover:border-text [&::-webkit-details-marker]:hidden"
+        >
           <MenuIcon class="size-5" />
-          {localize(ui.nav.menu, locale)}
+          <span class="hidden min-[22rem]:inline">
+            {localize(ui.nav.menu, locale)}
+          </span>
         </summary>
         <ul class="absolute inset-x-0 top-full border-b border-hair bg-surface">
           {items.map(({ id, label }) => (
@@ -68,9 +75,27 @@ const items = [
         </ul>
       </details>
     </nav>
-    {/* The mascot button goes here, next to the ES/EN group and outside it (T9, design section 6.5.1). */}
-    <div class="ml-auto lg:ml-0">
+    {/* Mascot toggle (T9, design sections 6.5.1 and 6.10.6): next to the ES/EN group and
+        outside it, preceded by a decorative rule. Rendered hidden; JavaScript shows it. */}
+    <div class="ml-auto flex items-center gap-1 lg:ml-0">
       <LanguageSwitcher locale={locale} ui={ui} />
+      <span aria-hidden="true" class="h-6 w-px shrink-0 bg-hair"></span>
+      <button
+        type="button"
+        data-mascot-toggle
+        hidden
+        aria-label={localize(ui.mascot.hide, locale)}
+        data-label-hide={localize(ui.mascot.hide, locale)}
+        data-label-show={localize(ui.mascot.show, locale)}
+        class="mascot-toggle"
+      >
+        <span class="mascot-toggle-ring" data-mascot-icon="hide">
+          <PawIcon />
+        </span>
+        <span class="mascot-toggle-ring" data-mascot-icon="show" hidden>
+          <PawOffIcon />
+        </span>
+      </button>
     </div>
   </div>
 </header>

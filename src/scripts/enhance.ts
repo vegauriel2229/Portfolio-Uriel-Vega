@@ -1,8 +1,9 @@
 // Progressive enhancement (design sections 5.4 and 6.13). The site is complete without this file.
-// No cookies, no storage, no network (R17.7).
+// No cookies, no network (R17.7); the only storage is the mascot preference (R25.11).
 
 import { initMotion } from "@/scripts/motion";
 import { initTimeline } from "@/scripts/timeline";
+import { initMascotToggle, isMascotHidden } from "@/scripts/mascot-toggle";
 
 const SECTION_IDS = [
   "home",
@@ -59,6 +60,8 @@ function enhanceLanguageSwitch(): void {
 function loadMascot(): void {
   // No platforms (404): the engine chunk is never even fetched (R25.13).
   if (!document.querySelector("[data-platform]")) return;
+  // Hidden preference: the chunk is never fetched (R25.11).
+  if (isMascotHidden()) return;
   const schedule =
     typeof window.requestIdleCallback === "function"
       ? (run: () => void): void => {
@@ -68,7 +71,11 @@ function loadMascot(): void {
           window.setTimeout(run, 1500);
         };
   const run = (): void => {
-    void import("./mascot/engine").then((engine) => engine.start());
+    // The visitor may have hidden the mascot while waiting for load/idle.
+    if (isMascotHidden()) return;
+    void import("./mascot/engine")
+      .then((engine) => engine.start())
+      .catch(() => undefined);
   };
   if (document.readyState === "complete") schedule(run);
   else window.addEventListener("load", () => schedule(run), { once: true });
@@ -78,4 +85,5 @@ enhanceMenu();
 initMotion();
 initTimeline();
 enhanceLanguageSwitch();
+initMascotToggle();
 loadMascot();

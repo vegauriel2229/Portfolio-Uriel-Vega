@@ -1250,6 +1250,54 @@
   .mascot-strip {
     image-rendering: pixelated;
   }
+
+  /*
+   * Mascot toggle in the header (design sections 6.4 and 6.5.1): a 36 px circle
+   * with a 1 px `line` border inside a 44 x 44 px touch area (R13.3), with a
+   * 20 px `muted` icon. Rendered `hidden` until JavaScript shows it (R25.6).
+   */
+  .mascot-toggle {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-touch);
+    height: var(--size-touch);
+    border-radius: var(--radius-full);
+    color: var(--color-muted);
+  }
+  .mascot-toggle[hidden],
+  .mascot-toggle-ring[hidden] {
+    display: none;
+  }
+  .mascot-toggle-ring {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-full);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mascot-toggle-ring {
+    transition: transform var(--duration-ui) var(--ease-out);
+  }
+  /* Color answers at once; only the ring moves (design section 6.9, row 3). */
+  @media (hover: hover) {
+    .mascot-toggle:hover {
+      color: var(--color-text);
+    }
+    .mascot-toggle:hover .mascot-toggle-ring {
+      transform: scale(1.08);
+    }
+  }
+  .mascot-toggle:active .mascot-toggle-ring {
+    transform: translateY(1px);
+    transition-duration: var(--duration-press);
+  }
 }
 
 @media print {

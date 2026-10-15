@@ -546,6 +546,119 @@ function startHopping(platforms: Element[]): void {
   request(activeSpot());
 }
 
+/** Disconnect observers and loops and forget the state; the caller owns the layer. */
+function teardown(): {
+  target: HTMLDivElement | null;
+  targetBox: HTMLDivElement | null;
+} {
+  running = false;
+  busy = false;
+  pending = -1;
+  current = -1;
+  window.cancelAnimationFrame(raf);
+  clearTimers();
+  platformObserver?.disconnect();
+  dogObserver?.disconnect();
+  resizeObserver?.disconnect();
+  platformObserver = null;
+  dogObserver = null;
+  resizeObserver = null;
+  const target = layer;
+  const targetBox = box;
+  layer = null;
+  box = null;
+  strip = null;
+  spots = [];
+  return { target, targetBox };
+}
+
+const BURST_PARTICLES = 10;
+const BURST_MS = 420;
+const VANISH_MS = 140;
+// Violet burst pieces (design 6.10.7): 5 action, 3 accent, 2 line.
+const BURST_COLORS = [
+  "var(--color-action)",
+  "var(--color-action)",
+  "var(--color-action)",
+  "var(--color-action)",
+  "var(--color-action)",
+  "var(--color-accent)",
+  "var(--color-accent)",
+  "var(--color-accent)",
+  "var(--color-line)",
+  "var(--color-line)",
+];
+
+function burstRadius(index: number): number {
+  const far = index % 2 === 1;
+  if (desktop) return far ? 36 : 24;
+  return far ? 22 : 14;
+}
+
+/**
+ * Farewell burst at the dog's center: pieces leave at 36° from each other with
+ * alternating radii, stay opaque for the first 30 %, then shrink and fade.
+ * Every piece is removed when its flight ends; the layer goes with the last one.
+ */
+function burst(target: HTMLDivElement, targetBox: HTMLDivElement): void {
+  const size = dogSize;
+  const centerX = Math.round(posX + size / 2);
+  const centerY = Math.round(posY + size / 2);
+  const resting = getComputedStyle(targetBox).transform;
+  let left = BURST_PARTICLES + 1;
+  const done = (): void => {
+    left -= 1;
+    if (left <= 0) target.remove();
+  };
+  const vanish = targetBox.animate(
+    [
+      { transform: `${resting} scale(1)`, opacity: "1" },
+      { transform: `${resting} scale(1.12)`, opacity: "0" },
+    ],
+    { duration: VANISH_MS, easing: "ease-out", fill: "forwards" },
+  );
+  vanish.onfinish = done;
+  for (let i = 0; i < BURST_PARTICLES; i += 1) {
+    const piece = document.createElement("span");
+    piece.setAttribute("aria-hidden", "true");
+    piece.style.position = "absolute";
+    piece.style.left = `${centerX - 2}px`;
+    piece.style.top = `${centerY - 2}px`;
+    piece.style.width = "4px";
+    piece.style.height = "4px";
+    piece.style.backgroundColor = BURST_COLORS[i] ?? "var(--color-action)";
+    piece.style.pointerEvents = "none";
+    target.appendChild(piece);
+    const angle = (i / BURST_PARTICLES) * Math.PI * 2;
+    const radius = burstRadius(i);
+    const dx = Math.round(Math.cos(angle) * radius * 10) / 10;
+    const dy = Math.round(Math.sin(angle) * radius * 10) / 10;
+    const flight = piece.animate(
+      [
+        { transform: "translate(0px, 0px) scale(1)", opacity: "1" },
+        {
+          transform: `translate(${dx * 0.7}px, ${dy * 0.7}px) scale(1)`,
+          opacity: "1",
+          offset: 0.3,
+        },
+        {
+          transform: `translate(${dx}px, ${dy}px) scale(0.3)`,
+          opacity: "0",
+        },
+      ],
+      {
+        duration: BURST_MS,
+        easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+        fill: "forwards",
+      },
+    );
+    flight.onfinish = () => {
+      piece.remove();
+      done();
+    };
+  }
+}
+
 export function start(): void {
   if (running || typeof window === "undefined") return;
   if (window.innerHeight < MIN_VIEWPORT_HEIGHT) return;
@@ -561,21 +674,30 @@ export function start(): void {
 }
 
 export function stop(): void {
-  running = false;
-  busy = false;
-  pending = -1;
-  current = -1;
-  window.cancelAnimationFrame(raf);
-  clearTimers();
-  platformObserver?.disconnect();
-  dogObserver?.disconnect();
-  resizeObserver?.disconnect();
-  platformObserver = null;
-  dogObserver = null;
-  resizeObserver = null;
-  layer?.remove();
-  layer = null;
-  box = null;
-  strip = null;
-  spots = [];
+  const { target } = teardown();
+  target?.remove();
+}
+
+/**
+ * Violet burst on hide (design 6.10.7, R25.21): the dog scales 1 → 1.12 while
+ * fading out (140 ms) and 10 squares of 4 px fly outwards (420 ms, total under
+ * 450 ms), then the layer is removed. Only `transform` and `opacity` move
+ * (Web Animations API, allowed by the CSP like any script-driven transform).
+ * Instant removal with reduced motion or when the dog is off-screen.
+ */
+export function hide(): void {
+  const { target, targetBox } = teardown();
+  if (!target || !targetBox) return;
+  const reduce = !window.matchMedia(MOTION_QUERY).matches;
+  const rect = targetBox.getBoundingClientRect();
+  const onScreen =
+    rect.bottom > 0 &&
+    rect.top < window.innerHeight &&
+    rect.right > 0 &&
+    rect.left < window.innerWidth;
+  if (reduce || !onScreen || typeof targetBox.animate !== "function") {
+    target.remove();
+    return;
+  }
+  burst(target, targetBox);
 }
