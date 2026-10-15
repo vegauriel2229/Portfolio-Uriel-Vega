@@ -104,9 +104,8 @@ export function initTimeline(): void {
   const scenarioOn = (): boolean =>
     motionQuery.matches && widthQuery.matches && heightQuery.matches;
 
-  const setPin = (value: "on" | "off" | null): void => {
-    if (value === null) delete track.dataset.pin;
-    else if (track.dataset.pin !== value) track.dataset.pin = value;
+  const setPin = (value: "on" | "off"): void => {
+    if (track.dataset.pin !== value) track.dataset.pin = value;
   };
 
   /*
@@ -118,6 +117,10 @@ export function initTimeline(): void {
    * 1024/1440. The clone sits in an offscreen [data-pin="on"] track of the
    * same width, so it gets the exact pinned geometry; step 3 stands in as
    * the tallest representative (counter, hint and team all shown).
+   * The clone measures with `overflow: visible`: the pinned stage uses
+   * `overflow: clip`, which stops `scrollHeight` from reporting clipped
+   * content, so without this override the guard would always read "fits"
+   * and the pin would stay on even at 360 where the stage overflows.
    */
   const pinnedFits = (): boolean => {
     if (track.dataset.pin === "on")
@@ -139,6 +142,8 @@ export function initTimeline(): void {
     const clone = stage.cloneNode(true) as HTMLElement;
     clone.setAttribute("data-step", "3");
     clone.removeAttribute("data-play");
+    // See the block comment above: measure the full content height.
+    clone.style.overflow = "visible";
     wrapper.appendChild(clone);
     document.body.appendChild(wrapper);
     try {
@@ -149,24 +154,16 @@ export function initTimeline(): void {
   };
 
   /*
-   * Full check (init, resize, media change): the pin needs the scenario and room for
-   * the stage (R24.9). The stage observer re-checks both ways: downgrade while
-   * pinned (direct measurement) and upgrade while unpinned (hidden-clone
-   * measurement, e.g. fonts settling late). No loop: the clone answer does not
-   * depend on the current pin state, so a re-fire re-affirms instead of flipping.
+   * Single check (init, resize, media change, stage resize): the pin needs
+   * the scenario (motion allowed, viewport at least 20rem x 40rem, so below
+   * that it stays a static list, R24.9) and room for the stage. Both the
+   * engaged and the unpinned states measure through the hidden clone, whose
+   * answer does not depend on the current pin state, so a re-fire re-affirms
+   * instead of flipping (no loop).
    */
-  const updatePin = (mode: "full" | "downgrade"): void => {
+  const updatePin = (): void => {
     if (!scenarioOn()) {
-      setPin(null);
-      return;
-    }
-    if (mode === "downgrade") {
-      if (track.dataset.pin === "on") {
-        if (stage.scrollHeight > stage.clientHeight + FIT_SLACK_PX)
-          setPin("off");
-      } else if (track.dataset.pin === "off") {
-        if (pinnedFits()) setPin("on");
-      }
+      setPin("off");
       return;
     }
     setPin(pinnedFits() ? "on" : "off");
@@ -175,10 +172,10 @@ export function initTimeline(): void {
   let resizeTimer = 0;
   const scheduleFull = (): void => {
     window.clearTimeout(resizeTimer);
-    resizeTimer = window.setTimeout(() => updatePin("full"), RESIZE_WAIT_MS);
+    resizeTimer = window.setTimeout(() => updatePin(), RESIZE_WAIT_MS);
   };
 
-  updatePin("full");
+  updatePin();
   setStep(1, true);
 
   window.addEventListener("resize", scheduleFull);
@@ -190,10 +187,7 @@ export function initTimeline(): void {
     let stageTimer = 0;
     const stageObserver = new ResizeObserver(() => {
       window.clearTimeout(stageTimer);
-      stageTimer = window.setTimeout(
-        () => updatePin("downgrade"),
-        RESIZE_WAIT_MS,
-      );
+      stageTimer = window.setTimeout(() => updatePin(), RESIZE_WAIT_MS);
     });
     stageObserver.observe(stage);
   }

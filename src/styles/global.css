@@ -816,6 +816,14 @@
   [data-timeline-sentinel="4"] {
     top: 100%;
   }
+
+  /* List mode (6.8.7): pin off, small viewport or reduced motion. The pinned
+     rules above never apply here, but this states it outright: all 4 steps
+     read complete, with full opacity. */
+  [data-timeline]:not([data-pin="on"]) [data-timeline-step] > *,
+  [data-timeline]:not([data-pin="on"]) .tl-team {
+    opacity: 1;
+  }
 }
 
 /*
@@ -871,10 +879,10 @@
     border-radius: 2px;
     background-color: currentColor;
   }
-  [data-timeline][data-pin="on"][data-step="1"] .tl-note:first-child,
-  [data-timeline][data-pin="on"][data-step="2"] .tl-note:nth-child(-n + 2),
-  [data-timeline][data-pin="on"][data-step="3"] .tl-note:nth-child(-n + 3),
-  [data-timeline][data-pin="on"][data-step="4"] .tl-note {
+  [data-timeline][data-pin="on"] .tl-stage[data-step="1"] .tl-note:first-child,
+  [data-timeline][data-pin="on"] .tl-stage[data-step="2"] .tl-note:nth-child(-n + 2),
+  [data-timeline][data-pin="on"] .tl-stage[data-step="3"] .tl-note:nth-child(-n + 3),
+  [data-timeline][data-pin="on"] .tl-stage[data-step="4"] .tl-note {
     color: var(--color-signal);
     background-color: currentColor;
   }
@@ -894,13 +902,13 @@
     transform-origin: left;
     transition: transform var(--duration-progress) var(--ease-io);
   }
-  [data-timeline][data-pin="on"][data-step="2"] .tl-rail-fill {
+  [data-timeline][data-pin="on"] .tl-stage[data-step="2"] .tl-rail-fill {
     transform: scaleX(0.34);
   }
-  [data-timeline][data-pin="on"][data-step="3"] .tl-rail-fill {
+  [data-timeline][data-pin="on"] .tl-stage[data-step="3"] .tl-rail-fill {
     transform: scaleX(0.67);
   }
-  [data-timeline][data-pin="on"][data-step="4"] .tl-rail-fill {
+  [data-timeline][data-pin="on"] .tl-stage[data-step="4"] .tl-rail-fill {
     transform: scaleX(1);
   }
 
@@ -935,19 +943,30 @@
   [data-timeline][data-pin="on"] .tl-card .meter {
     grid-area: meter;
   }
-  [data-timeline][data-pin="on"][data-step="1"]
+  /* Only opacity changes, never the flow, so there is no reflow or CLS.
+     The step lives on the stage (`timeline.ts` writes `stage.dataset.step`),
+     so the reveal scopes `data-step` to `.tl-stage`, not to the track. */
+  [data-timeline][data-pin="on"] .tl-stage[data-step="1"]
     [data-timeline-step="1"]
     > :not(.tl-team),
-  [data-timeline][data-pin="on"][data-step="2"]
+  [data-timeline][data-pin="on"] .tl-stage[data-step="2"]
     [data-timeline-step="2"]
     > :not(.tl-team),
-  [data-timeline][data-pin="on"][data-step="3"]
+  [data-timeline][data-pin="on"] .tl-stage[data-step="3"]
     [data-timeline-step="3"]
     > :not(.tl-team),
-  [data-timeline][data-pin="on"][data-step="4"]
+  [data-timeline][data-pin="on"] .tl-stage[data-step="4"]
     [data-timeline-step="4"]
     > :not(.tl-team) {
     opacity: 1;
+  }
+  /* Forward arrivals fade in (opacity only, 5.5); going back is instant
+     because `timeline.ts` drops `data-play` on backward steps (6.8.5). */
+  [data-timeline][data-pin="on"] .tl-stage[data-play] .tl-card-title,
+  [data-timeline][data-pin="on"] .tl-stage[data-play] .tl-card-body,
+  [data-timeline][data-pin="on"] .tl-stage[data-play] .tl-card .meter,
+  [data-timeline][data-pin="on"] .tl-stage[data-play] .tl-team {
+    transition: opacity var(--duration-progress) var(--ease-io);
   }
   [data-timeline][data-pin="on"] .tl-card-title {
     align-self: end;
@@ -960,9 +979,9 @@
     margin-top: 1.25rem;
     opacity: 0;
   }
-  [data-timeline][data-pin="on"][data-step="2"] .tl-team,
-  [data-timeline][data-pin="on"][data-step="3"] .tl-team,
-  [data-timeline][data-pin="on"][data-step="4"] .tl-team {
+  [data-timeline][data-pin="on"] .tl-stage[data-step="2"] .tl-team,
+  [data-timeline][data-pin="on"] .tl-stage[data-step="3"] .tl-team,
+  [data-timeline][data-pin="on"] .tl-stage[data-step="4"] .tl-team {
     opacity: 1;
   }
 
