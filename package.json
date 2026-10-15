@@ -12,6 +12,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "check:content": "node scripts/check-content.mjs",
+    "check:mascot": "node scripts/check-mascot.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

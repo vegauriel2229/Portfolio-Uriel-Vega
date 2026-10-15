@@ -128,6 +128,11 @@ function blockers(): Element[] {
   );
   for (const el of all) {
     if (el.closest("header, footer, [data-timeline], [data-mascot]")) continue;
+    // Viewport-rooted controls (e.g. the floating WhatsApp link) have no
+    // document position: mapping their viewport rect with scrollX/scrollY in
+    // measure() would void valid spots depending on the scroll. R25.3 only
+    // covers in-flow text and controls, so fixed elements are not blockers.
+    if (getComputedStyle(el).position === "fixed") continue;
     found.push(el);
   }
   return found;
@@ -515,7 +520,10 @@ function startHopping(platforms: Element[]): void {
     },
     { threshold: 0 },
   );
-  if (layer) dogObserver.observe(layer);
+  // Watch the sized box, never the layer: the layer is a 0x0 absolute
+  // origin, so it never intersects and the dog would always take the
+  // instant branch of hopTo (sitting still). The box keeps its cell size.
+  if (box) dogObserver.observe(box);
 
   window.addEventListener("resize", schedule);
   if (document.fonts) {
