@@ -880,8 +880,12 @@
     background-color: currentColor;
   }
   [data-timeline][data-pin="on"] .tl-stage[data-step="1"] .tl-note:first-child,
-  [data-timeline][data-pin="on"] .tl-stage[data-step="2"] .tl-note:nth-child(-n + 2),
-  [data-timeline][data-pin="on"] .tl-stage[data-step="3"] .tl-note:nth-child(-n + 3),
+  [data-timeline][data-pin="on"]
+    .tl-stage[data-step="2"]
+    .tl-note:nth-child(-n + 2),
+  [data-timeline][data-pin="on"]
+    .tl-stage[data-step="3"]
+    .tl-note:nth-child(-n + 3),
   [data-timeline][data-pin="on"] .tl-stage[data-step="4"] .tl-note {
     color: var(--color-signal);
     background-color: currentColor;
@@ -946,16 +950,20 @@
   /* Only opacity changes, never the flow, so there is no reflow or CLS.
      The step lives on the stage (`timeline.ts` writes `stage.dataset.step`),
      so the reveal scopes `data-step` to `.tl-stage`, not to the track. */
-  [data-timeline][data-pin="on"] .tl-stage[data-step="1"]
+  [data-timeline][data-pin="on"]
+    .tl-stage[data-step="1"]
     [data-timeline-step="1"]
     > :not(.tl-team),
-  [data-timeline][data-pin="on"] .tl-stage[data-step="2"]
+  [data-timeline][data-pin="on"]
+    .tl-stage[data-step="2"]
     [data-timeline-step="2"]
     > :not(.tl-team),
-  [data-timeline][data-pin="on"] .tl-stage[data-step="3"]
+  [data-timeline][data-pin="on"]
+    .tl-stage[data-step="3"]
     [data-timeline-step="3"]
     > :not(.tl-team),
-  [data-timeline][data-pin="on"] .tl-stage[data-step="4"]
+  [data-timeline][data-pin="on"]
+    .tl-stage[data-step="4"]
     [data-timeline-step="4"]
     > :not(.tl-team) {
     opacity: 1;

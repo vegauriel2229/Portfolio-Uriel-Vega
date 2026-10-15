@@ -82,13 +82,13 @@ observador, encadenado de saltos, `position:fixed` y movimiento reducido.
 
 ## Rutas
 
-| Ruta           | Respuesta                        |
-| -------------- | -------------------------------- |
-| `/`            | 308 → `/es` (`vercel.json`)      |
-| `/es`, `/en`   | 200                              |
-| `/sitemap.xml` | 200 (rewrite al índice)          |
+| Ruta           | Respuesta                                      |
+| -------------- | ---------------------------------------------- |
+| `/`            | 308 → `/es` (`vercel.json`)                    |
+| `/es`, `/en`   | 200                                            |
+| `/sitemap.xml` | 200 (rewrite al índice)                        |
 | `/index.html`  | 308 → `/` → `/es` (cleanUrls nativo, aceptado) |
-| resto          | 404 propia (`404.html`)          |
+| resto          | 404 propia (`404.html`)                        |
 
 ## Rollback (R20.9)
 
