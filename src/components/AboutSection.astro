@@ -36,6 +36,7 @@ const aiParagraph = profile.about.paragraphs.find(
 
 <section
   id="about"
+  data-platform="edge"
   data-tone="base"
   aria-labelledby="about-title"
   class="bg-bg text-text"
@@ -53,6 +54,7 @@ const aiParagraph = profile.about.paragraphs.find(
       <span data-platform="letters">{localize(ui.hiring.heading, locale)}</span>
     </h3>
     <dl
+      data-platform="ledge"
       data-reveal="fade"
       class="mt-5 grid max-w-4xl gap-x-12 gap-y-5 md:grid-cols-2"
     >
@@ -64,7 +66,11 @@ const aiParagraph = profile.about.paragraphs.find(
       ))}
     </dl>
 
-    <div data-reveal="fade" class="mt-10 grid max-w-[58ch] gap-4">
+    <div
+      data-platform="ledge"
+      data-reveal="fade"
+      class="mt-10 grid max-w-[58ch] gap-4"
+    >
       {paragraphs.map((paragraph) => (
         <p>{paragraph[locale]}</p>
       ))}
@@ -79,6 +85,7 @@ const aiParagraph = profile.about.paragraphs.find(
       </h3>
       {aiParagraph && (
         <p
+          data-platform="ledge"
           data-reveal="fade"
           class="mt-4 max-w-[58ch] border-l-4 border-accent pl-5 text-lead"
         >

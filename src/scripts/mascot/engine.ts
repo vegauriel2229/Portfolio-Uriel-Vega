@@ -37,6 +37,8 @@ const MIN_VIEWPORT_HEIGHT = 120;
 const LETTER_SINK_EM = 0.3;
 /** First arrival waits for the hero name to finish rising (300 ms delay + 800 ms rise). */
 const HERO_SETTLE_MS = 1250;
+/** Reveal transition (600 ms) plus a margin before re-measuring. */
+const REVEAL_SETTLE_MS = 700;
 // Idle life on the platform: short sniffing strolls, then a nap after 10 s without scrolling.
 const IDLE_WANDER_DESKTOP = 96;
 const IDLE_WANDER_MOBILE = 40;
@@ -56,6 +58,8 @@ interface Spot {
   /** Free stretch (dog's left x) where it can stroll without covering text or leaving the platform. */
   minX: number;
   maxX: number;
+  /** The hero name: where the dog arrives when the page opens. */
+  home: boolean;
 }
 
 interface Tokens {
@@ -93,6 +97,9 @@ let idling = false;
 let lying = false;
 let napTimer = 0;
 let startTimer = 0;
+let revealTimer = 0;
+let settling = false;
+let revealObserver: MutationObserver | null = null;
 let lastNapReset = 0;
 let tokens: Tokens = {
   anticipate: 70,
@@ -103,6 +110,22 @@ let tokens: Tokens = {
   enter: 380,
   walkFrame: 100,
 };
+
+/** 0..1 share of an animation; rAF timestamps can predate `start` by a frame. */
+function progress(now: number, start: number, duration: number): number {
+  if (duration <= 0) return 1;
+  return Math.min(1, Math.max(0, (now - start) / duration));
+}
+
+/**
+ * Height of the sticky header in px. Measured on the element: the token is in
+ * rem ("4rem"), which parseFloat would read as 4.
+ */
+function headerHeight(): number {
+  const header = document.querySelector("header");
+  const height = header?.getBoundingClientRect().height ?? 0;
+  return height > 0 ? height : 64;
+}
 
 function later(ms: number, step: () => void): void {
   timers.push(window.setTimeout(step, ms));
@@ -115,10 +138,13 @@ function clearTimers(): void {
 
 function readTokens(): void {
   const css = getComputedStyle(document.documentElement);
+  // The production CSS minifier rewrites times (520ms becomes .52s), so the
+  // unit decides the scale; a bare number is read as milliseconds.
   const ms = (name: string, fallback: number): number => {
     const raw = css.getPropertyValue(name).trim();
     const value = Number.parseFloat(raw);
-    return Number.isFinite(value) && value >= 0 ? value : fallback;
+    if (!Number.isFinite(value) || value < 0) return fallback;
+    return /\ds$/.test(raw) && !raw.endsWith("ms") ? value * 1000 : value;
   };
   tokens = {
     anticipate: ms("--mascot-anticipate", 70),
@@ -164,13 +190,15 @@ function place(x: number, y: number): void {
 }
 
 /** Every text block or control the resting dog must not cover (design 6.10.4). */
+const TEXT_TAGS = new Set(["H1", "H2", "H3", "H4", "P", "LI", "DT", "DD"]);
+
 function blockers(): Element[] {
   const found: Element[] = [];
   const all = document.querySelectorAll(
     "h1, h2, h3, h4, p, li, dt, dd, a, button, img, picture",
   );
   for (const el of all) {
-    if (el.closest("header, footer, [data-timeline], [data-mascot]")) continue;
+    if (el.closest("header, footer, [data-mascot]")) continue;
     // Viewport-rooted controls (e.g. the floating WhatsApp link) have no
     // document position: mapping their viewport rect with scrollX/scrollY in
     // measure() would void valid spots depending on the scroll. R25.3 only
@@ -185,12 +213,7 @@ function blockers(): Element[] {
 function measure(platforms: Element[]): void {
   desktop = window.matchMedia(DESKTOP_QUERY).matches;
   dogSize = CELL * (desktop ? 2 : 1);
-  const headerPx =
-    Number.parseFloat(
-      getComputedStyle(document.documentElement).getPropertyValue(
-        "--size-header",
-      ),
-    ) || 64;
+  const headerPx = headerHeight();
   const minTop = headerPx + dogSize + 8;
   const scrollX = window.scrollX;
   const scrollY = window.scrollY;
@@ -200,15 +223,27 @@ function measure(platforms: Element[]): void {
     right: number;
     bottom: number;
   }[] = [];
+  // Text blocks count by their line boxes (where the words are), not by the
+  // whole block: a short heading leaves the rest of its row as free air.
+  // Controls and images count by their full box.
+  const range = document.createRange();
   for (const other of blockers()) {
-    const box = other.getBoundingClientRect();
-    if (box.width < 1 || box.height < 1) continue;
-    blocked.push({
-      left: box.left + scrollX,
-      top: box.top + scrollY,
-      right: box.right + scrollX,
-      bottom: box.bottom + scrollY,
-    });
+    let boxes: DOMRect[];
+    if (TEXT_TAGS.has(other.tagName)) {
+      range.selectNodeContents(other);
+      boxes = Array.from(range.getClientRects());
+    } else {
+      boxes = [other.getBoundingClientRect()];
+    }
+    for (const box of boxes) {
+      if (box.width < 1 || box.height < 1) continue;
+      blocked.push({
+        left: box.left + scrollX,
+        top: box.top + scrollY,
+        right: box.right + scrollX,
+        bottom: box.bottom + scrollY,
+      });
+    }
   }
   // The strip the dog takes with its left edge at x on a platform whose top is y.
   const clear = (x: number, y: number): boolean => {
@@ -224,18 +259,20 @@ function measure(platforms: Element[]): void {
   const wander = desktop ? IDLE_WANDER_DESKTOP : IDLE_WANDER_MOBILE;
   const next: Spot[] = [];
   for (const el of platforms) {
-    if (el.closest("header, footer, [data-timeline]")) continue;
+    if (el.closest("header, footer")) continue;
     const rect = el.getBoundingClientRect();
     if (rect.width < 2 || rect.height < 2) continue;
     const top = rect.top + scrollY;
     // Free air is checked from the line box (above it nothing may be covered);
     // the dog itself stands lower, on the tops of the letters.
+    const kind = el.getAttribute("data-platform");
     const sink =
-      el.getAttribute("data-platform") === "letters"
+      kind === "letters" || kind === "name"
         ? Number.parseFloat(getComputedStyle(el).fontSize) * LETTER_SINK_EM
         : 0;
-    if (top < minTop) continue;
-    const center = Math.min(
+    // Header clearance counts where the dog really stands (after the sink).
+    if (top + sink < minTop) continue;
+    let center = Math.min(
       Math.max(rect.left + scrollX + rect.width / 2, dogSize / 2 + 4),
       window.innerWidth + scrollX - dogSize / 2 - 4,
     );
@@ -247,13 +284,33 @@ function measure(platforms: Element[]): void {
       bottom: top,
     };
     // The resting box only has to clear the sticky header.
-    if (rest.left < 0 || rest.top < headerPx + 8) continue;
+    if (rest.left < 0 || rest.top + sink < headerPx + 8) continue;
     // No exemption for the platform itself or its containers: the strip the
     // dog takes standing on the spot must be free air above it, even when
     // the text belongs to the same card or heading (RNF18, design 6.10.4).
     // The platform's own rect starts at the spot top, so a valid spot never
-    // touches it (edge contact is not an overlap).
-    if (!clear(rest.left, top)) continue;
+    // touches it (edge contact is not an overlap). When the middle is taken,
+    // the nearest free stretch along the platform is used instead.
+    if (!clear(rest.left, top)) {
+      const lo = Math.max(rect.left + scrollX, scrollX + 4);
+      const hi = Math.min(
+        rect.right + scrollX - dogSize,
+        window.innerWidth + scrollX - dogSize - 4,
+      );
+      let found = Number.NaN;
+      for (let d = 8; d <= hi - lo && Number.isNaN(found); d += 8) {
+        for (const x of [rest.left + d, rest.left - d]) {
+          if (x >= lo && x <= hi && clear(x, top)) {
+            found = x;
+            break;
+          }
+        }
+      }
+      if (Number.isNaN(found)) continue;
+      rest.left = found;
+      rest.right = found + dogSize;
+      center = found + dogSize / 2;
+    }
     // Stroll range: free air on both sides, never past the platform's ends
     // (the paws stay on it) nor the page edges.
     const edgeLeft = Math.max(
@@ -270,13 +327,59 @@ function measure(platforms: Element[]): void {
     let maxX = rest.left;
     while (minX - 4 >= edgeLeft && clear(minX - 4, top)) minX -= 4;
     while (maxX + 4 <= edgeRight && clear(maxX + 4, top)) maxX += 4;
-    next.push({ top: top + sink, center, minX, maxX });
+    next.push({ top: top + sink, center, minX, maxX, home: kind === "name" });
   }
   next.sort((a, b) => a.top - b.top);
   spots = next;
 }
 
 /** The last free platform at or above the reading line (binary search over the sorted list). */
+/** Document band where a resting dog is fully visible under the sticky header. */
+function visibleBand(): { top: number; bottom: number } {
+  const headerPx = headerHeight();
+  return {
+    top: window.scrollY + headerPx + dogSize + 12,
+    bottom: window.scrollY + window.innerHeight - 16,
+  };
+}
+
+/**
+ * The spot the dog should be on: it stays put while its spot is comfortably on
+ * screen, then moves to the visible spot nearest the reading line (the one
+ * above the line wins ties), so it keeps up with the reader and is on screen
+ * whenever any spot is. With nothing visible: the last spot above the line.
+ */
+function targetSpot(): number {
+  const band = visibleBand();
+  const comfort = {
+    top: band.top,
+    bottom: window.scrollY + window.innerHeight * 0.85,
+  };
+  // Judge by where the dog really stands (its paws), not by the spot index:
+  // a re-measure can shift the list under a resting dog. In flight, the
+  // destination decides.
+  const paws = busy ? (spots[current]?.top ?? -1) : posY + dogSize;
+  if (current >= 0 && paws >= comfort.top && paws <= comfort.bottom) {
+    return current;
+  }
+  // Lead the reader: going down, aim lower on screen (and the other way up),
+  // so the new spot stays in view for a while before the next hop.
+  const down = scrollingDown;
+  const line = window.scrollY + window.innerHeight * (down ? 0.6 : 0.4);
+  let best = -1;
+  let bestScore = Infinity;
+  spots.forEach((spot, index) => {
+    if (spot.top < band.top || spot.top > band.bottom) return;
+    const behind = down ? spot.top < line : spot.top > line;
+    const score = Math.abs(spot.top - line) * (behind ? 1.5 : 1);
+    if (score < bestScore) {
+      bestScore = score;
+      best = index;
+    }
+  });
+  return best !== -1 ? best : activeSpot();
+}
+
 function activeSpot(): number {
   const line = window.scrollY + window.innerHeight * 0.55;
   let low = 0;
@@ -337,7 +440,7 @@ function fly(
   let prevY = from.y;
   if (box) box.style.willChange = "transform";
   const tick = (now: number): void => {
-    const t = Math.min(1, (now - start) / duration);
+    const t = progress(now, start, duration);
     const glide = easeInOutSine(t);
     const x = from.x + (to.x - from.x) * glide + lean * 4 * t * (1 - t);
     // Linear drift plus the arc term is a constant-gravity trajectory.
@@ -352,7 +455,8 @@ function fly(
     if (Math.abs(dx) > Math.abs(dy) * 2 && Math.abs(dx) > 0.5) {
       showFrame(
         WALK_FRAMES[
-          Math.floor((now - start) / tokens.walkFrame) % WALK_FRAMES.length
+          Math.floor(Math.max(0, now - start) / tokens.walkFrame) %
+            WALK_FRAMES.length
         ]!,
         mirror,
       );
@@ -391,11 +495,12 @@ function stroll(target: number, done: () => void): void {
   const duration = (Math.abs(step) / speed) * 1000;
   if (box) box.style.willChange = "transform";
   const tick = (now: number): void => {
-    const t = Math.min(1, (now - start) / duration);
+    const t = progress(now, start, duration);
     place(x + step * t, y);
     showFrame(
       WALK_FRAMES[
-        Math.floor((now - start) / tokens.walkFrame) % WALK_FRAMES.length
+        Math.floor(Math.max(0, now - start) / tokens.walkFrame) %
+          WALK_FRAMES.length
       ]!,
       mirror,
     );
@@ -409,28 +514,33 @@ function stroll(target: number, done: () => void): void {
   raf = window.requestAnimationFrame(tick);
 }
 
+/**
+ * A hop was requested while busy: go where the reader is now (the queued
+ * index may already be off screen). False when the dog should stay.
+ */
+function resumeQueued(target: number): boolean {
+  if (pending === -1) return false;
+  pending = -1;
+  const next = targetSpot();
+  if (next === -1 || next === target) return false;
+  hopTo(next);
+  return true;
+}
+
 function rest(target: number): void {
   const landMs = pending === -1 ? tokens.land : 60;
   later(landMs, () => {
     if (!running) return;
-    if (pending !== -1 && pending !== target) {
-      const next = pending;
-      pending = -1;
-      hopTo(next);
-      return;
-    }
-    pending = -1;
+    if (resumeQueued(target)) return;
+    // Settling (short walk to the middle, tail wag) gives way to a new hop at once.
+    settling = true;
     stroll(target, () => {
       if (!running) return;
       showFrame(FRAME_WAG, mirror);
       later(WAG_MS, () => {
         if (!running) return;
-        if (pending !== -1) {
-          const next = pending;
-          pending = -1;
-          hopTo(next);
-          return;
-        }
+        settling = false;
+        if (resumeQueued(target)) return;
         busy = false;
         showFrame(FRAME_SIT, mirror);
         startIdle();
@@ -443,7 +553,7 @@ function rest(target: number): void {
 function squash(done: () => void): void {
   const start = performance.now();
   const tick = (now: number): void => {
-    const t = Math.min(1, (now - start) / LAND_SQUASH_MS);
+    const t = progress(now, start, LAND_SQUASH_MS);
     const k = Math.sin(Math.PI * t) * (1 - 0.4 * t);
     squashX = 1 + 0.14 * k;
     squashY = 1 - 0.14 * k;
@@ -523,9 +633,9 @@ function walkTo(goal: number, done: () => void): void {
   const start = performance.now();
   const tick = (now: number): void => {
     if (!idling) return;
-    const t = Math.min(1, (now - start) / duration);
+    const t = progress(now, start, duration);
     place(fromX + dist * easeInOutSine(t), y);
-    const beat = Math.floor((now - start) / IDLE_WALK_FRAME_MS);
+    const beat = Math.floor(Math.max(0, now - start) / IDLE_WALK_FRAME_MS);
     showFrame(
       beat % 6 >= 4
         ? SNIFF_FRAMES[beat % 2]!
@@ -598,8 +708,21 @@ function wake(): void {
   });
 }
 
+let scrollFrame = 0;
+let lastScrollY = 0;
+let scrollingDown = true;
+
 function onScroll(): void {
   if (!running) return;
+  const y = window.scrollY;
+  if (y !== lastScrollY) scrollingDown = y > lastScrollY;
+  lastScrollY = y;
+  if (!scrollFrame) {
+    scrollFrame = window.requestAnimationFrame(() => {
+      scrollFrame = 0;
+      if (running) request(targetSpot());
+    });
+  }
   if (lying && !busy) wake();
   const now = performance.now();
   if (now - lastNapReset > 250) {
@@ -625,7 +748,7 @@ function enter(target: number): void {
   const start = performance.now();
   if (box) box.style.willChange = "transform";
   const tick = (now: number): void => {
-    const t = Math.min(1, (now - start) / tokens.enter);
+    const t = progress(now, start, tokens.enter);
     place(from.x, from.y + (to.y - from.y) * easeInOut(t));
     if (t < 1) {
       raf = window.requestAnimationFrame(tick);
@@ -701,6 +824,14 @@ function request(target: number): void {
     if (target === current) pending = -1;
     return;
   }
+  if (busy && settling) {
+    // Cut the landing ceremony short: the reader has already moved on.
+    settling = false;
+    window.cancelAnimationFrame(raf);
+    clearTimers();
+    if (box) box.style.willChange = "";
+    busy = false;
+  }
   if (busy) {
     pending = target;
     return;
@@ -748,9 +879,36 @@ function startHopping(platforms: Element[]): void {
 
   const remeasure = (): void => {
     if (!running) return;
+    // Remember where the dog stands: the spot list may gain or lose entries
+    // (fonts, images, resize), so the old index can point somewhere else.
+    const before = current >= 0 ? spots[current] : undefined;
     measure(platforms);
     sizeSprite();
-    if (current >= spots.length) current = -1;
+    if (!before) {
+      if (current >= spots.length) current = -1;
+      return;
+    }
+    // A resting dog maps to the spot under its paws; one in flight keeps its target.
+    const ref = busy
+      ? before
+      : { center: posX + dogSize / 2, top: posY + dogSize };
+    let nearest = -1;
+    let gap = Infinity;
+    spots.forEach((spot, index) => {
+      const d = Math.hypot(spot.center - ref.center, spot.top - ref.top);
+      if (d < gap) {
+        gap = d;
+        nearest = index;
+      }
+    });
+    current = nearest;
+    // The layout moved under a resting dog: it moves with its platform.
+    if (nearest !== -1 && !busy && !lying) {
+      const spot = spots[nearest]!;
+      const y = spot.top - dogSize;
+      const x = Math.min(Math.max(posX, spot.minX), spot.maxX);
+      if (Math.abs(y - posY) > 1 || Math.abs(x - posX) > 1) place(x, y);
+    }
   };
   let resizeTimer = 0;
   const schedule = (): void => {
@@ -768,7 +926,7 @@ function startHopping(platforms: Element[]): void {
 
   platformObserver = new IntersectionObserver(
     () => {
-      if (running) request(activeSpot());
+      if (running) request(targetSpot());
     },
     { rootMargin: ACTIVE_MARGIN },
   );
@@ -799,6 +957,7 @@ function startHopping(platforms: Element[]): void {
       window.cancelAnimationFrame(raf);
       clearTimers();
       busy = false;
+      settling = false;
       pending = -1;
       idling = false;
       lying = false;
@@ -819,13 +978,27 @@ function startHopping(platforms: Element[]): void {
     resizeObserver = new ResizeObserver(schedule);
     resizeObserver.observe(document.documentElement);
   }
+  // Fade-in reveals slide content 12px into place: measure again once they land.
+  revealObserver = new MutationObserver(() => {
+    window.clearTimeout(revealTimer);
+    revealTimer = window.setTimeout(schedule, REVEAL_SETTLE_MS);
+  });
+  revealObserver.observe(document.body, {
+    subtree: true,
+    attributeFilter: ["data-revealed"],
+  });
 
   // The first measure can run with fallback fonts or half-loaded images and
   // keep spots that cover text (RNF18): re-measure once the layout settles.
   window.requestAnimationFrame(schedule);
   window.setTimeout(schedule, MEASURE_WAIT_MS * 2);
 
-  request(activeSpot());
+  // First arrival: on the name when it is on screen, else wherever the reader is.
+  const band = visibleBand();
+  const home = spots.findIndex(
+    (spot) => spot.home && spot.top >= band.top && spot.top <= band.bottom,
+  );
+  request(home !== -1 ? home : targetSpot());
 }
 
 /** Disconnect observers and loops and forget the state; the caller owns the layer. */
@@ -835,6 +1008,7 @@ function teardown(): {
 } {
   running = false;
   busy = false;
+  settling = false;
   idling = false;
   lying = false;
   squashX = 1;
@@ -845,6 +1019,9 @@ function teardown(): {
   clearTimers();
   window.clearTimeout(napTimer);
   window.clearTimeout(startTimer);
+  window.clearTimeout(revealTimer);
+  revealObserver?.disconnect();
+  revealObserver = null;
   window.removeEventListener("scroll", onScroll);
   platformObserver?.disconnect();
   dogObserver?.disconnect();

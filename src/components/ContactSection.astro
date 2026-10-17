@@ -50,6 +50,7 @@ const rows = [
 
 <section
   id="contact"
+  data-platform="edge"
   data-tone="base"
   aria-labelledby="contact-title"
   class="bg-bg text-text"
@@ -62,7 +63,12 @@ const rows = [
         </span>
       </span>
     </h2>
-    <ul role="list" data-reveal-group class="mt-8 max-w-[36rem]">
+    <ul
+      role="list"
+      data-reveal-group
+      data-platform="frame"
+      class="mt-8 max-w-[36rem]"
+    >
       {rows.map((row) => (
         <li data-reveal="fade" class="border-b border-hair">
           <a

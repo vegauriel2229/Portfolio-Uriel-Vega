@@ -46,11 +46,7 @@ const lines = greeting.endsWith(name)
             <span class="hero-line mask" data-k={index}>
               {/* The top line of the name is where the mascot arrives first (6.10.3). */}
               <span>
-                {index === 0 ? (
-                  <span data-platform="letters">{line}</span>
-                ) : (
-                  line
-                )}
+                {index === 0 ? <span data-platform="name">{line}</span> : line}
               </span>
             </span>
           </>
@@ -87,6 +83,7 @@ const lines = greeting.endsWith(name)
       </div>
     </div>
     <aside
+      data-platform="card"
       aria-labelledby="hiring-home-title"
       class="hero-fx rounded-lg bg-linear-to-br from-action to-action-hover p-(--space-card) text-on-action ring-1 ring-on-action/15 ring-inset"
       data-k="2"

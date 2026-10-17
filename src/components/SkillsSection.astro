@@ -28,6 +28,7 @@ const projectName = (id: string): string =>
 
 <section
   id="skills"
+  data-platform="edge"
   data-tone="deep"
   aria-labelledby="skills-title"
   class="bg-bg text-text"
@@ -57,7 +58,7 @@ const projectName = (id: string): string =>
           {/* D-167: violet terminal window. Every skill is a `$ name` line and
               `backedBy` follows as `# …` comment lines. Complete without JS:
               the typing entrance only runs under [data-terminals-live]. */}
-          <div data-terminal class="term">
+          <div data-terminal data-platform="frame" class="term">
             <div aria-hidden="true" class="term-bar">
               <i></i>
               <i></i>
