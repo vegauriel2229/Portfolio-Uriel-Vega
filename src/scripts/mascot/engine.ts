@@ -7,13 +7,18 @@
 
 import spriteUrl from "@/assets/mascot/labrador.png?no-inline";
 
-// Sprite cells (design 6.10.1): sit, sit wagging its tail, 4 walk frames, leap, drop, crouch.
+// Sprite cells (design 6.10.1): sit, sit wagging its tail, 4 walk frames, leap, drop, crouch,
+// then 2 sniff frames (head down), lying awake and 2 sleeping frames (eyes shut, floating "z").
 const FRAME_SIT = 0;
 const FRAME_WAG = 1;
 const FRAME_LEAP = 6;
 const FRAME_DROP = 7;
 const FRAME_CROUCH = 8;
 const WALK_FRAMES = [2, 3, 4, 5];
+const SNIFF_FRAMES = [9, 10];
+const FRAME_LIE = 11;
+const SLEEP_FRAMES = [12, 13];
+const FRAME_COUNT = 14;
 
 const CELL = 32;
 const DESKTOP_QUERY = "(min-width: 48rem)";
@@ -27,10 +32,30 @@ const WALK_MAX_MOBILE = 24;
 const WALK_SPEED_DESKTOP = 56;
 const WALK_SPEED_MOBILE = 28;
 const MIN_VIEWPORT_HEIGHT = 120;
+// A text line box starts well above the letters (ascent and leading): on a
+// "letters" platform the paws sink this share of the font size to touch the tops.
+const LETTER_SINK_EM = 0.3;
+/** First arrival waits for the hero name to finish rising (300 ms delay + 800 ms rise). */
+const HERO_SETTLE_MS = 1250;
+// Idle life on the platform: short sniffing strolls, then a nap after 10 s without scrolling.
+const IDLE_WANDER_DESKTOP = 96;
+const IDLE_WANDER_MOBILE = 40;
+const IDLE_SPEED_DESKTOP = 34;
+const IDLE_SPEED_MOBILE = 18;
+const IDLE_WALK_FRAME_MS = 150;
+const SNIFF_FRAME_MS = 170;
+const NAP_AFTER_MS = 10000;
+const LIE_TO_SLEEP_MS = 1600;
+const BREATH_MS = 900;
+const BREATHS_MAX = 120;
+const LAND_SQUASH_MS = 180;
 
 interface Spot {
   top: number;
   center: number;
+  /** Free stretch (dog's left x) where it can stroll without covering text or leaving the platform. */
+  minX: number;
+  maxX: number;
 }
 
 interface Tokens {
@@ -62,6 +87,13 @@ let desktop = false;
 let mirror = false;
 let posX = 0;
 let posY = 0;
+let squashX = 1;
+let squashY = 1;
+let idling = false;
+let lying = false;
+let napTimer = 0;
+let startTimer = 0;
+let lastNapReset = 0;
 let tokens: Tokens = {
   anticipate: 70,
   land: 110,
@@ -99,6 +131,9 @@ function readTokens(): void {
   };
 }
 
+const rand = (min: number, max: number): number =>
+  min + Math.random() * (max - min);
+
 function showFrame(frame: number, flip: boolean): void {
   if (!box || !strip) return;
   mirror = flip;
@@ -111,7 +146,12 @@ function render(): void {
   if (!box) return;
   const rx = Math.round(posX);
   const ry = Math.round(posY);
-  box.style.transform = `translate3d(${rx}px, ${ry}px, 0)${mirror ? " scaleX(-1)" : ""}`;
+  const sx = (mirror ? -1 : 1) * squashX;
+  const scale =
+    sx !== 1 || squashY !== 1
+      ? ` scale(${sx.toFixed(3)}, ${squashY.toFixed(3)})`
+      : "";
+  box.style.transform = `translate3d(${rx}px, ${ry}px, 0)${scale}`;
 }
 
 function place(x: number, y: number): void {
@@ -152,15 +192,48 @@ function measure(platforms: Element[]): void {
       ),
     ) || 64;
   const minTop = headerPx + dogSize + 8;
-  const blocked = blockers();
+  const scrollX = window.scrollX;
+  const scrollY = window.scrollY;
+  const blocked: {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+  }[] = [];
+  for (const other of blockers()) {
+    const box = other.getBoundingClientRect();
+    if (box.width < 1 || box.height < 1) continue;
+    blocked.push({
+      left: box.left + scrollX,
+      top: box.top + scrollY,
+      right: box.right + scrollX,
+      bottom: box.bottom + scrollY,
+    });
+  }
+  // The strip the dog takes with its left edge at x on a platform whose top is y.
+  const clear = (x: number, y: number): boolean => {
+    const left = x;
+    const right = x + dogSize;
+    const top = y - dogSize;
+    for (const b of blocked) {
+      if (left < b.right && right > b.left && top < b.bottom && y > b.top)
+        return false;
+    }
+    return true;
+  };
+  const wander = desktop ? IDLE_WANDER_DESKTOP : IDLE_WANDER_MOBILE;
   const next: Spot[] = [];
   for (const el of platforms) {
     if (el.closest("header, footer, [data-timeline]")) continue;
     const rect = el.getBoundingClientRect();
     if (rect.width < 2 || rect.height < 2) continue;
-    const scrollX = window.scrollX;
-    const scrollY = window.scrollY;
     const top = rect.top + scrollY;
+    // Free air is checked from the line box (above it nothing may be covered);
+    // the dog itself stands lower, on the tops of the letters.
+    const sink =
+      el.getAttribute("data-platform") === "letters"
+        ? Number.parseFloat(getComputedStyle(el).fontSize) * LETTER_SINK_EM
+        : 0;
     if (top < minTop) continue;
     const center = Math.min(
       Math.max(rect.left + scrollX + rect.width / 2, dogSize / 2 + 4),
@@ -173,29 +246,31 @@ function measure(platforms: Element[]): void {
       right: center + dogSize / 2,
       bottom: top,
     };
-    if (rest.left < 0 || rest.top < minTop) continue;
-    let free = true;
+    // The resting box only has to clear the sticky header.
+    if (rest.left < 0 || rest.top < headerPx + 8) continue;
     // No exemption for the platform itself or its containers: the strip the
     // dog takes standing on the spot must be free air above it, even when
     // the text belongs to the same card or heading (RNF18, design 6.10.4).
     // The platform's own rect starts at the spot top, so a valid spot never
     // touches it (edge contact is not an overlap).
-    for (const other of blocked) {
-      const box = other.getBoundingClientRect();
-      if (box.width < 1 || box.height < 1) continue;
-      const ox = box.left + scrollX;
-      const oy = box.top + scrollY;
-      if (
-        rest.left < ox + box.width &&
-        rest.right > ox &&
-        rest.top < oy + box.height &&
-        rest.bottom > oy
-      ) {
-        free = false;
-        break;
-      }
-    }
-    if (free) next.push({ top, center });
+    if (!clear(rest.left, top)) continue;
+    // Stroll range: free air on both sides, never past the platform's ends
+    // (the paws stay on it) nor the page edges.
+    const edgeLeft = Math.max(
+      rest.left - wander,
+      rect.left + scrollX - dogSize / 3,
+      scrollX + 4,
+    );
+    const edgeRight = Math.min(
+      rest.left + wander,
+      rect.right + scrollX - (dogSize * 2) / 3,
+      window.innerWidth + scrollX - dogSize - 4,
+    );
+    let minX = rest.left;
+    let maxX = rest.left;
+    while (minX - 4 >= edgeLeft && clear(minX - 4, top)) minX -= 4;
+    while (maxX + 4 <= edgeRight && clear(maxX + 4, top)) maxX += 4;
+    next.push({ top: top + sink, center, minX, maxX });
   }
   next.sort((a, b) => a.top - b.top);
   spots = next;
@@ -235,7 +310,7 @@ function hopDuration(
   );
 }
 
-const easeOut = (t: number): number => 1 - Math.pow(1 - t, 3);
+const easeInOutSine = (t: number): number => -(Math.cos(Math.PI * t) - 1) / 2;
 const easeInOut = (t: number): number =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
@@ -246,9 +321,11 @@ function fly(
   done: () => void,
 ): void {
   const duration = hopDuration(from, to);
+  // A real jump: x glides, y follows a parabola whose apex grows with the distance.
+  const dist = Math.hypot(to.x - from.x, to.y - from.y);
   const arc = desktop
-    ? Math.min(48, Math.abs(to.y - from.y) / 4 + 16)
-    : Math.min(24, Math.abs(to.y - from.y) / 8 + 8);
+    ? Math.min(96, dist / 5 + 28)
+    : Math.min(48, dist / 8 + 14);
   // With free margins the arc leans out to the side instead of crossing the text (D-141).
   const lean =
     wide && Math.abs(to.x - from.x) > 1
@@ -261,8 +338,10 @@ function fly(
   if (box) box.style.willChange = "transform";
   const tick = (now: number): void => {
     const t = Math.min(1, (now - start) / duration);
-    const x = from.x + (to.x - from.x) * easeOut(t) + lean * 4 * t * (1 - t);
-    const y = from.y + (to.y - from.y) * easeInOut(t) - arc * 4 * t * (1 - t);
+    const glide = easeInOutSine(t);
+    const x = from.x + (to.x - from.x) * glide + lean * 4 * t * (1 - t);
+    // Linear drift plus the arc term is a constant-gravity trajectory.
+    const y = from.y + (to.y - from.y) * t - arc * 4 * t * (1 - t);
     place(x, y);
     // Sprite follows the instantaneous direction (design 6.10.5): LEAP while
     // rising, DROP while falling, WALK frames on a mostly horizontal stretch.
@@ -354,20 +433,190 @@ function rest(target: number): void {
         }
         busy = false;
         showFrame(FRAME_SIT, mirror);
+        startIdle();
       });
     });
   });
 }
 
-/** Fall in from the edge of the screen instead of teleporting (design 6.10.5). */
+/** Soft landing: the dog squashes on its paws and springs back (transform only). */
+function squash(done: () => void): void {
+  const start = performance.now();
+  const tick = (now: number): void => {
+    const t = Math.min(1, (now - start) / LAND_SQUASH_MS);
+    const k = Math.sin(Math.PI * t) * (1 - 0.4 * t);
+    squashX = 1 + 0.14 * k;
+    squashY = 1 - 0.14 * k;
+    render();
+    if (t < 1) {
+      raf = window.requestAnimationFrame(tick);
+    } else {
+      squashX = 1;
+      squashY = 1;
+      render();
+      done();
+    }
+  };
+  raf = window.requestAnimationFrame(tick);
+}
+
+/*
+ * Idle life on the platform (after landing): short strolls inside the spot's
+ * free stretch with the nose down, sniffing pauses and the odd tail wag.
+ * Every step is a timer or a short rAF walk, interruptible by the next hop.
+ */
+function stopIdle(): void {
+  if (!idling && !lying) return;
+  idling = false;
+  lying = false;
+  window.cancelAnimationFrame(raf);
+  clearTimers();
+}
+
+function startIdle(): void {
+  if (!running || busy) return;
+  idling = true;
+  lying = false;
+  later(rand(700, 1400), idleStep);
+}
+
+function idleStep(): void {
+  if (!running || busy || !idling) return;
+  const spot = spots[current];
+  if (!spot) return;
+  // Nobody sees an off-screen stroll: just look again later.
+  if (!inViewport(posY + dogSize)) {
+    later(1500, idleStep);
+    return;
+  }
+  const next = (): void => {
+    showFrame(Math.random() < 0.3 ? FRAME_WAG : FRAME_SIT, mirror);
+    later(rand(900, 2000), () => {
+      if (!idling) return;
+      showFrame(FRAME_SIT, mirror);
+      later(rand(200, 600), idleStep);
+    });
+  };
+  const sniffs = Math.round(rand(3, 6));
+  if (spot.maxX - spot.minX >= 8 && Math.random() < 0.65) {
+    let goal = rand(spot.minX, spot.maxX);
+    if (Math.abs(goal - posX) < 8)
+      goal = posX < (spot.minX + spot.maxX) / 2 ? spot.maxX : spot.minX;
+    walkTo(goal, () => sniff(sniffs, next));
+  } else {
+    sniff(sniffs, next);
+  }
+}
+
+/** Slow walk along the platform, nose down every few steps like on a scent trail. */
+function walkTo(goal: number, done: () => void): void {
+  const fromX = posX;
+  const y = posY;
+  const dist = goal - fromX;
+  if (Math.abs(dist) < 2) {
+    done();
+    return;
+  }
+  const flip = dist < 0;
+  const speed = desktop ? IDLE_SPEED_DESKTOP : IDLE_SPEED_MOBILE;
+  const duration = (Math.abs(dist) / speed) * 1000;
+  const start = performance.now();
+  const tick = (now: number): void => {
+    if (!idling) return;
+    const t = Math.min(1, (now - start) / duration);
+    place(fromX + dist * easeInOutSine(t), y);
+    const beat = Math.floor((now - start) / IDLE_WALK_FRAME_MS);
+    showFrame(
+      beat % 6 >= 4
+        ? SNIFF_FRAMES[beat % 2]!
+        : WALK_FRAMES[beat % WALK_FRAMES.length]!,
+      flip,
+    );
+    if (t < 1) raf = window.requestAnimationFrame(tick);
+    else done();
+  };
+  raf = window.requestAnimationFrame(tick);
+}
+
+/** Nose to the ground, bobbing between the two sniff frames. */
+function sniff(times: number, done: () => void): void {
+  let left = times * 2;
+  const step = (): void => {
+    if (!idling) return;
+    if (left <= 0) {
+      done();
+      return;
+    }
+    showFrame(SNIFF_FRAMES[left % 2]!, mirror);
+    left -= 1;
+    later(SNIFF_FRAME_MS + (left % 2) * 60, step);
+  };
+  step();
+}
+
+/** Any scroll postpones the nap; NAP_AFTER_MS of stillness lays the dog down. */
+function armNap(): void {
+  window.clearTimeout(napTimer);
+  napTimer = window.setTimeout(lieDown, NAP_AFTER_MS);
+}
+
+function lieDown(): void {
+  if (!running || lying || current < 0) return;
+  if (busy) {
+    armNap();
+    return;
+  }
+  stopIdle();
+  lying = true;
+  showFrame(FRAME_CROUCH, mirror);
+  later(160, () => {
+    if (!lying) return;
+    showFrame(FRAME_LIE, mirror);
+    later(LIE_TO_SLEEP_MS, () => breathe(0));
+  });
+}
+
+/** Asleep: slow breathing between the two sleep frames (bounded, then still). */
+function breathe(count: number): void {
+  if (!lying) return;
+  showFrame(SLEEP_FRAMES[count % 2]!, mirror);
+  if (count < BREATHS_MAX) later(BREATH_MS, () => breathe(count + 1));
+}
+
+/** Woken by a scroll that keeps it on the same platform: get up, then idle again. */
+function wake(): void {
+  if (!lying) return;
+  lying = false;
+  clearTimers();
+  showFrame(FRAME_LIE, mirror);
+  later(130, () => {
+    showFrame(FRAME_CROUCH, mirror);
+    later(130, () => {
+      showFrame(FRAME_SIT, mirror);
+      startIdle();
+    });
+  });
+}
+
+function onScroll(): void {
+  if (!running) return;
+  if (lying && !busy) wake();
+  const now = performance.now();
+  if (now - lastNapReset > 250) {
+    lastNapReset = now;
+    armNap();
+  }
+}
+
+/**
+ * Fall in from the top edge of the screen instead of teleporting (design 6.10.5):
+ * always from above, so it reads as the dog dropping down the page with the reader.
+ */
 function enter(target: number): void {
   const to = spotXY(target);
-  const belowMiddle = to.y > window.scrollY + window.innerHeight / 2;
   const from = {
     x: to.x,
-    y: belowMiddle
-      ? window.scrollY - dogSize
-      : window.scrollY + window.innerHeight,
+    y: Math.min(window.scrollY - dogSize, to.y - dogSize * 2),
   };
   place(from.x, from.y);
   showFrame(FRAME_DROP, false);
@@ -383,7 +632,7 @@ function enter(target: number): void {
     } else {
       if (box) box.style.willChange = "";
       showFrame(FRAME_CROUCH, false);
-      rest(target);
+      squash(() => rest(target));
     }
   };
   raf = window.requestAnimationFrame(tick);
@@ -391,7 +640,9 @@ function enter(target: number): void {
 
 /** True while a document height is at least partly inside the viewport. */
 function inViewport(y: number): boolean {
-  return y >= window.scrollY - dogSize && y <= window.scrollY + window.innerHeight;
+  return (
+    y >= window.scrollY - dogSize && y <= window.scrollY + window.innerHeight
+  );
 }
 
 function hopTo(target: number): void {
@@ -401,8 +652,7 @@ function hopTo(target: number): void {
   // dogVisible lags a frame behind (IntersectionObserver) and is false during
   // every scroll, so geometry decides: a visible displacement always animates.
   const destVisible = inViewport(to.y);
-  const fromVisible =
-    current !== -1 && (dogVisible || inViewport(from.y));
+  const fromVisible = current !== -1 && (dogVisible || inViewport(from.y));
   // Instant place only for the hidden initial position or a far off-screen
   // destination. When the dog later enters the view it falls in (380 ms).
   if (!destVisible && (current === -1 || !fromVisible)) {
@@ -412,6 +662,7 @@ function hopTo(target: number): void {
     showFrame(FRAME_SIT, mirror);
     current = target;
     busy = false;
+    startIdle();
     return;
   }
   // Far or off-screen origin, never a teleport: fall in from the screen edge.
@@ -427,6 +678,9 @@ function hopTo(target: number): void {
   }
   if (Math.abs(to.x - from.x) < 2 && Math.abs(to.y - from.y) < 2) {
     current = target;
+    busy = false;
+    showFrame(FRAME_SIT, mirror);
+    startIdle();
     return;
   }
   current = target;
@@ -437,7 +691,7 @@ function hopTo(target: number): void {
     fly(from, to, window.innerWidth >= 1424, () => {
       if (!running) return;
       showFrame(FRAME_CROUCH, mirror);
-      rest(target);
+      squash(() => rest(target));
     });
   });
 }
@@ -451,6 +705,7 @@ function request(target: number): void {
     pending = target;
     return;
   }
+  stopIdle();
   hopTo(target);
 }
 
@@ -461,6 +716,8 @@ function buildLayer(): void {
   layer.className = "mascot";
   box = document.createElement("div");
   box.className = "mascot-box";
+  // Squash and flip pivot on the paws.
+  box.style.transformOrigin = "50% 100%";
   // Hidden until the first place(): the layer is absolute at the document
   // origin and would otherwise cover the header logo at (0, 0).
   box.style.opacity = "0";
@@ -478,9 +735,9 @@ function sizeSprite(): void {
   const cell = CELL * (desktop ? 2 : 1);
   box.style.width = `${cell}px`;
   box.style.height = `${cell}px`;
-  strip.style.width = `${CELL * 9 * (desktop ? 2 : 1)}px`;
+  strip.style.width = `${CELL * FRAME_COUNT * (desktop ? 2 : 1)}px`;
   strip.style.height = `${cell}px`;
-  strip.style.backgroundSize = `${CELL * 9 * (desktop ? 2 : 1)}px ${cell}px`;
+  strip.style.backgroundSize = `${CELL * FRAME_COUNT * (desktop ? 2 : 1)}px ${cell}px`;
 }
 
 /** Chain of continuous hops following the reader down (design 6.10.5). */
@@ -543,11 +800,20 @@ function startHopping(platforms: Element[]): void {
       clearTimers();
       busy = false;
       pending = -1;
+      idling = false;
+      lying = false;
+      squashX = 1;
+      squashY = 1;
       const to = spotXY(current);
       place(to.x, to.y);
       showFrame(FRAME_SIT, mirror);
+      startIdle();
+      armNap();
     }
   });
+
+  window.addEventListener("scroll", onScroll, { passive: true });
+  armNap();
 
   if ("ResizeObserver" in window && document.documentElement) {
     resizeObserver = new ResizeObserver(schedule);
@@ -569,10 +835,17 @@ function teardown(): {
 } {
   running = false;
   busy = false;
+  idling = false;
+  lying = false;
+  squashX = 1;
+  squashY = 1;
   pending = -1;
   current = -1;
   window.cancelAnimationFrame(raf);
   clearTimers();
+  window.clearTimeout(napTimer);
+  window.clearTimeout(startTimer);
+  window.removeEventListener("scroll", onScroll);
   platformObserver?.disconnect();
   dogObserver?.disconnect();
   resizeObserver?.disconnect();
@@ -682,6 +955,15 @@ export function start(): void {
   if (platforms.length === 0) return;
   if (!("IntersectionObserver" in window && "requestAnimationFrame" in window))
     return;
+  // Measured mid-rise, the name would sit lower than where it ends up.
+  const wait = Math.max(0, HERO_SETTLE_MS - performance.now());
+  if (wait > 0) {
+    window.clearTimeout(startTimer);
+    startTimer = window.setTimeout(() => {
+      if (!running) startHopping(platforms);
+    }, wait);
+    return;
+  }
   startHopping(platforms);
 }
 

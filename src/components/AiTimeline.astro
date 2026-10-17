@@ -1,5 +1,4 @@
 ---
-import ArrowIcon from "@/components/icons/ArrowIcon.astro";
 import BatonIcon from "@/components/icons/BatonIcon.astro";
 import LevelMeter from "@/components/LevelMeter.astro";
 import type { Content } from "@/lib/content";
@@ -55,6 +54,7 @@ const firstCounter = fillTemplate(localize(ui.timeline.stepCounter, locale), {
   n: "1",
   total: String(TOTAL_STEPS),
 });
+const pad = (n: number): string => String(n).padStart(2, "0");
 ---
 
 <div data-timeline class="tl">
@@ -65,27 +65,53 @@ const firstCounter = fillTemplate(localize(ui.timeline.stepCounter, locale), {
     data-counter={localize(ui.timeline.stepCounter, locale)}
     class="tl-stage"
   >
-    <div class="tl-top">
-      <div aria-hidden="true" data-timeline-score class="tl-score">
-        <div class="tl-rail">
-          <i class="tl-rail-fill"></i>
-        </div>
-        <div class="tl-notes">
-          {[1, 2, 3, 4].map((note) => (
-            <span class="tl-note" data-note={note}></span>
-          ))}
-        </div>
-      </div>
-      <p aria-hidden="true" data-timeline-counter class="tl-counter">
-        {firstCounter}
-      </p>
-    </div>
+    {/* Player chrome (6.8): rendered hidden, timeline.ts shows it. Without
+        JavaScript the 4 steps below read as a complete list. */}
+    <ol
+      role="list"
+      aria-label={localize(ui.timeline.stepsLabel, locale)}
+      data-timeline-nav
+      class="tl-nav"
+      hidden
+    >
+      {stepTitles.map((title, index) => (
+        <li>
+          <button
+            type="button"
+            class="tl-tab"
+            data-timeline-go={index + 1}
+            aria-controls={`tl-step-${index + 1}`}
+          >
+            <span aria-hidden="true" class="tl-tab-note"></span>
+            <span aria-hidden="true" class="tl-tab-num">
+              {pad(index + 1)}
+            </span>
+            <span class="tl-tab-title">
+              <span class="sr-only md:not-sr-only">{title}</span>
+            </span>
+            <span aria-hidden="true" class="tl-tab-bar">
+              <i></i>
+            </span>
+          </button>
+        </li>
+      ))}
+    </ol>
     <ol role="list" data-timeline-steps class="tl-cards">
-      <li class="tl-card" data-timeline-step="1" data-title={stepTitles[0]}>
+      <li
+        id="tl-step-1"
+        class="tl-card"
+        data-timeline-step="1"
+        data-title={stepTitles[0]}
+      >
         <span aria-hidden="true" class="tl-marker"></span>
         <h4 class="tl-card-title">{stepTitles[0]}</h4>
       </li>
-      <li class="tl-card" data-timeline-step="2" data-title={stepTitles[1]}>
+      <li
+        id="tl-step-2"
+        class="tl-card"
+        data-timeline-step="2"
+        data-title={stepTitles[1]}
+      >
         <span aria-hidden="true" class="tl-marker"></span>
         <h4 class="tl-card-title">{stepTitles[1]}</h4>
         <ul
@@ -109,14 +135,24 @@ const firstCounter = fillTemplate(localize(ui.timeline.stepCounter, locale), {
           ))}
         </ul>
       </li>
-      <li class="tl-card" data-timeline-step="3" data-title={stepTitles[2]}>
+      <li
+        id="tl-step-3"
+        class="tl-card"
+        data-timeline-step="3"
+        data-title={stepTitles[2]}
+      >
         <span aria-hidden="true" class="tl-marker"></span>
         <h4 class="tl-card-title">{stepTitles[2]}</h4>
         <p class="tl-card-body">
           {localize(profile.about.sddExplanation, locale)}
         </p>
       </li>
-      <li class="tl-card" data-timeline-step="4" data-title={stepTitles[3]}>
+      <li
+        id="tl-step-4"
+        class="tl-card"
+        data-timeline-step="4"
+        data-title={stepTitles[3]}
+      >
         <span aria-hidden="true" class="tl-marker"></span>
         <h4 class="tl-card-title">{stepTitles[3]}</h4>
         {level && (
@@ -125,20 +161,27 @@ const firstCounter = fillTemplate(localize(ui.timeline.stepCounter, locale), {
         <LevelMeter lit={lit} />
       </li>
     </ol>
-    <div class="tl-foot">
-      <p data-timeline-hint class="tl-hint">
-        {localize(ui.timeline.scrollHint, locale)}
-        <ArrowIcon class="tl-hint-arrow" />
+    <div data-timeline-controls class="tl-controls" hidden>
+      <button type="button" data-timeline-toggle class="tl-toggle">
+        <span data-when="playing">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 16 16">
+            <rect x="3" y="2" width="3.5" height="12" rx="1"></rect>
+            <rect x="9.5" y="2" width="3.5" height="12" rx="1"></rect>
+          </svg>
+          {localize(ui.timeline.pause, locale)}
+        </span>
+        <span data-when="stopped">
+          <svg aria-hidden="true" focusable="false" viewBox="0 0 16 16">
+            <path d="M4 2.5v11a1 1 0 0 0 1.5.86l9-5.5a1 1 0 0 0 0-1.72l-9-5.5A1 1 0 0 0 4 2.5Z"></path>
+          </svg>
+          {localize(ui.timeline.play, locale)}
+        </span>
+      </button>
+      <p aria-hidden="true" data-timeline-counter class="tl-counter">
+        {firstCounter}
       </p>
-      <span aria-hidden="true" class="tl-spacer"></span>
+      <p class="tl-hint">{localize(ui.timeline.hint, locale)}</p>
     </div>
     <p class="sr-only" aria-live="polite" data-timeline-status></p>
   </div>
-  {[1, 2, 3, 4].map((sentinel) => (
-    <i
-      aria-hidden="true"
-      data-timeline-sentinel={sentinel}
-      class="tl-sentinel"
-    ></i>
-  ))}
 </div>

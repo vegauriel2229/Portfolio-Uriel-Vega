@@ -44,16 +44,23 @@ const lines = greeting.endsWith(name)
           <>
             {index > 0 && " "}
             <span class="hero-line mask" data-k={index}>
-              <span>{line}</span>
+              {/* The top line of the name is where the mascot arrives first (6.10.3). */}
+              <span>
+                {index === 0 ? (
+                  <span data-platform="letters">{line}</span>
+                ) : (
+                  line
+                )}
+              </span>
             </span>
           </>
         ))}
       </h1>
-      <p class="hero-fx mt-5 max-w-[40ch] text-lead" data-k="0">
+      <p class="hero-fx mt-6 max-w-[40ch] text-lead text-muted" data-k="0">
         {localize(profile.identity.role, locale)}
       </p>
       <div
-        class="hero-fx mt-7 flex flex-col items-start gap-2 lg:flex-row lg:items-center lg:gap-x-6"
+        class="hero-fx mt-9 flex flex-col items-start gap-3 min-[30rem]:flex-row min-[30rem]:items-center min-[30rem]:gap-x-6 lg:gap-x-8"
         data-k="1"
       >
         <a
@@ -81,7 +88,7 @@ const lines = greeting.endsWith(name)
     </div>
     <aside
       aria-labelledby="hiring-home-title"
-      class="hero-fx rounded-lg bg-action p-(--space-card) text-on-action"
+      class="hero-fx rounded-lg bg-linear-to-br from-action to-action-hover p-(--space-card) text-on-action ring-1 ring-on-action/15 ring-inset"
       data-k="2"
     >
       <h2 id="hiring-home-title" class="sr-only">

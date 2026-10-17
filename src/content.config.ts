@@ -195,7 +195,10 @@ const uiSchema = z.strictObject({
     stepStatus: localized,
     litStatus: localized,
     stepCounter: localized,
-    scrollHint: localized,
+    stepsLabel: localized,
+    play: localized,
+    pause: localized,
+    hint: localized,
   }),
   skills: z.strictObject({
     levelPrefix: localized,

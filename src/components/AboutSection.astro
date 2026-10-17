@@ -52,7 +52,10 @@ const aiParagraph = profile.about.paragraphs.find(
     <h3 class="mt-8 text-h3">
       <span data-platform="letters">{localize(ui.hiring.heading, locale)}</span>
     </h3>
-    <dl data-reveal="fade" class="mt-5 grid gap-x-8 gap-y-4 md:grid-cols-2">
+    <dl
+      data-reveal="fade"
+      class="mt-5 grid max-w-4xl gap-x-12 gap-y-5 md:grid-cols-2"
+    >
       {facts.map(({ label, value, wide }) => (
         <div class:list={[wide && "md:col-span-2"]}>
           <dt class="text-small text-muted">{localize(label, locale)}</dt>

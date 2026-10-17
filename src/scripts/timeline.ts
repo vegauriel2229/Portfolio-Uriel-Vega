@@ -1,18 +1,16 @@
-// Orchestra timeline (design sections 5.6 and 6.8). Progressive enhancement:
-// without this module the 4 steps read as a complete list and nothing pins (R24.10).
-// The sentinels set `data-step` on the stage and the CSS derives every visual state.
-// Forward arrivals replay their entrance (`data-play`); going back is instant (6.8.5).
-// No `scroll` listener: one IntersectionObserver plus a debounced ResizeObserver.
+// Orchestra timeline as an interactive player (design sections 5.6 and 6.8).
+// Progressive enhancement: without this module the 4 steps read as a complete list.
+// With it, the step buttons pick what is on stage, the active button's bar fills
+// while the step plays and its `animationend` advances to the next one; the run
+// starts the first time the player is in view, pauses while it is out of view or
+// a keyboard user is inside it, and stops after the last step (nothing infinite).
+// The stage gets `data-step` and `data-play`; the CSS derives every visual state.
 
 const TOTAL_STEPS = 4;
-/** Wait between overflow re-checks (design section 5.6). */
-const RESIZE_WAIT_MS = 150;
-/** The live region announces the resting step only, not every step of a fast scroll (6.8.2). */
+/** The live region announces the resting step only, not every quick click (6.8.2). */
 const ANNOUNCE_WAIT_MS = 300;
-/** Rounding tolerance so sub-pixel heights cannot flip the pin on and off. */
-const FIT_SLACK_PX = 2;
-/** Central reading strip that the sentinels must cross (design section 6.8.7). */
-const STRIP_MARGIN = "-35% 0px -55% 0px";
+/** Share of the player that must be on screen for it to play. */
+const VISIBLE_RATIO = 0.45;
 
 function fill(template: string, values: Record<string, string>): string {
   return template.replace(
@@ -25,35 +23,35 @@ export function initTimeline(): void {
   if (!("IntersectionObserver" in window)) return;
   const track = document.querySelector<HTMLElement>("[data-timeline]");
   const stage = track?.querySelector<HTMLElement>("[data-timeline-stage]");
-  if (!track || !stage) return;
-  const sentinels = Array.from(
-    track.querySelectorAll<HTMLElement>("[data-timeline-sentinel]"),
+  const nav = track?.querySelector<HTMLElement>("[data-timeline-nav]");
+  const controls = track?.querySelector<HTMLElement>(
+    "[data-timeline-controls]",
+  );
+  const toggle = track?.querySelector<HTMLButtonElement>(
+    "[data-timeline-toggle]",
+  );
+  if (!track || !stage || !nav || !controls || !toggle) return;
+  const tabs = Array.from(
+    nav.querySelectorAll<HTMLButtonElement>("[data-timeline-go]"),
   );
   const steps = Array.from(
     stage.querySelectorAll<HTMLElement>("[data-timeline-step]"),
   );
+  if (tabs.length !== TOTAL_STEPS || steps.length !== TOTAL_STEPS) return;
+
   const status = stage.querySelector("[data-timeline-status]");
   const counter = stage.querySelector("[data-timeline-counter]");
-  if (sentinels.length !== TOTAL_STEPS || steps.length !== TOTAL_STEPS) return;
-
   const stepStatus = stage.dataset.stepStatus ?? "";
   const litStatus = stage.dataset.litStatus ?? "";
   const counterTemplate = stage.dataset.counter ?? "";
   const titles = steps.map((step) => step.dataset.title ?? "");
 
   let current = 0;
-  let primed = false;
+  let playing = false;
+  let started = false;
+  let inView = false;
+  let focused = false;
   let announceTimer = 0;
-
-  const render = (step: number): void => {
-    stage.dataset.step = String(step);
-    if (counter && counterTemplate) {
-      counter.textContent = fill(counterTemplate, {
-        n: String(step),
-        total: String(TOTAL_STEPS),
-      });
-    }
-  };
 
   const announce = (step: number): void => {
     if (!status || !stepStatus) return;
@@ -69,123 +67,121 @@ export function initTimeline(): void {
     }, ANNOUNCE_WAIT_MS);
   };
 
-  const setStep = (step: number, silent: boolean): void => {
-    if (stage.dataset.step === String(step)) return;
-    if (!silent) {
-      if (step > current) stage.dataset.play = String(step);
-      else delete stage.dataset.play;
-    }
+  /** Pause while out of view or under keyboard focus; the bar keeps its place. */
+  const syncPause = (): void => {
+    const paused = playing && (!inView || focused);
+    if (paused) track.dataset.paused = "";
+    else delete track.dataset.paused;
+  };
+
+  const setPlaying = (value: boolean): void => {
+    playing = value;
+    if (value) track.dataset.playing = "";
+    else delete track.dataset.playing;
+    syncPause();
+  };
+
+  /** Restart the CSS entrances of a step (chips, baton, meter) on every arrival. */
+  const replay = (step: number): void => {
+    delete stage.dataset.play;
+    void stage.offsetWidth;
+    stage.dataset.play = String(step);
+  };
+
+  const show = (step: number, silent = false): void => {
+    if (step === current) return;
     current = step;
-    render(step);
+    stage.dataset.step = String(step);
+    tabs.forEach((tab, index) => {
+      if (index + 1 === step) tab.setAttribute("aria-current", "step");
+      else tab.removeAttribute("aria-current");
+      if (index + 1 < step) tab.dataset.done = "";
+      else delete tab.dataset.done;
+    });
+    if (counter && counterTemplate) {
+      counter.textContent = fill(counterTemplate, {
+        n: String(step),
+        total: String(TOTAL_STEPS),
+      });
+    }
+    replay(step);
     if (!silent) announce(step);
   };
+
+  // The active bar finished filling: next step, or stop after the last one.
+  nav.addEventListener("animationend", (event) => {
+    if (!playing || event.animationName !== "tl-progress") return;
+    if (current < TOTAL_STEPS) {
+      show(current + 1);
+    } else {
+      setPlaying(false);
+      tabs.forEach((tab) => (tab.dataset.done = ""));
+    }
+  });
+
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => {
+      show(index + 1);
+    });
+    // Arrow keys move along the steps.
+    tab.addEventListener("keydown", (event) => {
+      const delta =
+        event.key === "ArrowRight" || event.key === "ArrowDown"
+          ? 1
+          : event.key === "ArrowLeft" || event.key === "ArrowUp"
+            ? -1
+            : 0;
+      if (delta === 0) return;
+      event.preventDefault();
+      const next = Math.min(TOTAL_STEPS, Math.max(1, index + 1 + delta));
+      tabs[next - 1]?.focus();
+      show(next);
+    });
+  });
+
+  toggle.addEventListener("click", () => {
+    if (playing) {
+      setPlaying(false);
+      return;
+    }
+    // Play again from the start once the run is over.
+    if (current === TOTAL_STEPS) show(1);
+    started = true;
+    setPlaying(true);
+  });
+
+  // Only keyboard focus pauses: a mouse click on a step keeps the run going.
+  stage.addEventListener("focusin", (event) => {
+    focused = (event.target as Element).matches(":focus-visible");
+    syncPause();
+  });
+  stage.addEventListener("focusout", (event) => {
+    if (stage.contains(event.relatedTarget as Node | null)) return;
+    focused = false;
+    syncPause();
+  });
 
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        const index = sentinels.indexOf(entry.target as HTMLElement);
-        if (index === -1) continue;
-        const first = !primed;
-        primed = true;
-        setStep(index + 1, first);
+        inView =
+          entry.isIntersecting && entry.intersectionRatio >= VISIBLE_RATIO;
+        // First time in view: the orchestra starts on its own.
+        if (inView && !started) {
+          started = true;
+          replay(current);
+          setPlaying(true);
+        }
+        syncPause();
       }
     },
-    { rootMargin: STRIP_MARGIN },
+    { threshold: [0, VISIBLE_RATIO] },
   );
-  sentinels.forEach((sentinel) => observer.observe(sentinel));
 
-  // D-170: the pin scenario no longer checks the motion preference;
-  // animations always run. Only the viewport size can keep the static list.
-  const widthQuery = window.matchMedia("(min-width: 20rem)");
-  const heightQuery = window.matchMedia("(min-height: 40rem)");
-
-  const scenarioOn = (): boolean => widthQuery.matches && heightQuery.matches;
-
-  const setPin = (value: "on" | "off"): void => {
-    if (track.dataset.pin !== value) track.dataset.pin = value;
-  };
-
-  /*
-   * Whether the pinned stage would fit, measured on a hidden clone so the
-   * visible list is never touched (hidden-clone method, measurement only).
-   * The list-mode stage stacks all 4 steps, while the pinned stage stacks
-   * every step in a single grid cell (6.8.4): measuring the visible stage
-   * would always report overflow and the pin would never engage at
-   * 1024/1440. The clone sits in an offscreen [data-pin="on"] track of the
-   * same width, so it gets the exact pinned geometry; step 3 stands in as
-   * the tallest representative (counter, hint and team all shown).
-   * The clone measures with `overflow: visible`: the pinned stage uses
-   * `overflow: clip`, which stops `scrollHeight` from reporting clipped
-   * content, so without this override the guard would always read "fits"
-   * and the pin would stay on even at 360 where the stage overflows.
-   */
-  const pinnedFits = (): boolean => {
-    if (track.dataset.pin === "on")
-      return stage.scrollHeight <= stage.clientHeight + FIT_SLACK_PX;
-    const width = track.clientWidth;
-    if (width === 0) return false;
-    const wrapper = document.createElement("div");
-    wrapper.setAttribute("data-timeline", "");
-    wrapper.setAttribute("data-pin", "on");
-    wrapper.setAttribute("aria-hidden", "true");
-    // Offscreen through CSSOM (allowed by the CSP, 5.5); the dist HTML
-    // keeps zero style attributes.
-    wrapper.style.position = "fixed";
-    wrapper.style.top = "0";
-    wrapper.style.left = "-99999px";
-    wrapper.style.width = `${width}px`;
-    wrapper.style.visibility = "hidden";
-    wrapper.style.pointerEvents = "none";
-    const clone = stage.cloneNode(true) as HTMLElement;
-    clone.setAttribute("data-step", "3");
-    clone.removeAttribute("data-play");
-    // See the block comment above: measure the full content height.
-    clone.style.overflow = "visible";
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper);
-    try {
-      return clone.scrollHeight <= clone.clientHeight + FIT_SLACK_PX;
-    } finally {
-      wrapper.remove();
-    }
-  };
-
-  /*
-   * Single check (init, resize, media change, stage resize): the pin needs
-   * the scenario (viewport at least 20rem x 40rem, so below that it stays
-   * a static list, R24.9; D-170: motion preference is ignored) and room
-   * engaged and the unpinned states measure through the hidden clone, whose
-   * answer does not depend on the current pin state, so a re-fire re-affirms
-   * instead of flipping (no loop).
-   */
-  const updatePin = (): void => {
-    if (!scenarioOn()) {
-      setPin("off");
-      return;
-    }
-    setPin(pinnedFits() ? "on" : "off");
-  };
-
-  let resizeTimer = 0;
-  const scheduleFull = (): void => {
-    window.clearTimeout(resizeTimer);
-    resizeTimer = window.setTimeout(() => updatePin(), RESIZE_WAIT_MS);
-  };
-
-  updatePin();
-  setStep(1, true);
-
-  window.addEventListener("resize", scheduleFull);
-  widthQuery.addEventListener("change", scheduleFull);
-  heightQuery.addEventListener("change", scheduleFull);
-
-  if ("ResizeObserver" in window) {
-    let stageTimer = 0;
-    const stageObserver = new ResizeObserver(() => {
-      window.clearTimeout(stageTimer);
-      stageTimer = window.setTimeout(() => updatePin(), RESIZE_WAIT_MS);
-    });
-    stageObserver.observe(stage);
-  }
+  nav.hidden = false;
+  controls.hidden = false;
+  track.dataset.mode = "player";
+  show(1, true);
+  delete stage.dataset.play;
+  observer.observe(stage);
 }

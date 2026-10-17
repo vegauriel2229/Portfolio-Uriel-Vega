@@ -147,9 +147,18 @@ timeline:
   stepCounter:
     es: "Paso {n} de {total}"
     en: "Step {n} of {total}"
-  scrollHint:
-    es: "Al bajar, avanza la orquesta"
-    en: "Scroll to move the orchestra forward"
+  stepsLabel:
+    es: "Pasos de mi experiencia con IA"
+    en: "Steps of my AI experience"
+  play:
+    es: "Reproducir"
+    en: "Play"
+  pause:
+    es: "Pausar"
+    en: "Pause"
+  hint:
+    es: "Elegí un paso o dejá que la orquesta avance sola"
+    en: "Pick a step or let the orchestra play on"
 
 skills:
   levelPrefix:

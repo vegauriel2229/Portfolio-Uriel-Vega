@@ -25,7 +25,7 @@ const items = [
 
 <header
   data-tone="deep"
-  class="sticky top-0 z-50 border-b border-hair bg-bg-deep text-text [@media(max-height:30rem)]:static"
+  class="sticky top-0 z-50 border-b border-hair bg-bg-deep/85 text-text backdrop-blur-md backdrop-saturate-150 [@media(max-height:30rem)]:static"
 >
   <div class="wrap flex min-h-(--size-header) items-center gap-1 min-[22rem]:gap-2 lg:gap-3">
     <a
@@ -61,7 +61,7 @@ const items = [
             {localize(ui.nav.menu, locale)}
           </span>
         </summary>
-        <ul class="absolute inset-x-0 top-full border-b border-hair bg-surface">
+        <ul class="absolute inset-x-0 top-full border-b border-hair bg-surface pb-2">
           {items.map(({ id, label }) => (
             <li class="border-b border-hair last:border-b-0">
               <a
