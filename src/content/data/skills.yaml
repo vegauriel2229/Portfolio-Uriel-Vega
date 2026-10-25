@@ -24,13 +24,13 @@ skills:
     backedBy: []
   - id: html-css
     name: "HTML/CSS"
-    level: intermediate
+    level: advanced
     backedBy:
       - vegatech
       - crisur
   - id: javascript
     name: "JavaScript"
-    level: intermediate
+    level: advanced
     backedBy:
       - vegatech
   - id: git-github

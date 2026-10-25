@@ -20,8 +20,8 @@ about:
       es: "Soy estudiante de la Tecnicatura Universitaria en Programación en la UTN. Estoy en el último semestre y mi egreso estimado es a mediados de 2027."
       en: "I'm a student in the Technical Degree in Programming at UTN, in my final semester, expecting to graduate around mid-2027."
     - id: busqueda
-      es: "Busco mi primer empleo en IT, como pasantía o part-time, y estoy abierto a aprender en distintas áreas, no solo desarrollo web. Puedo trabajar en forma remota o presencial desde Godoy Cruz, Mendoza."
-      en: "I'm looking for my first job in IT, as an internship or part-time role, and I'm open to learning across different areas, not just web development. I can work remotely or on-site from Godoy Cruz, Mendoza."
+      es: "Busco mi primer empleo en IT, ya sea un puesto full-time, part-time o una pasantía, y estoy abierto a aprender en distintas áreas, no solo desarrollo web. Puedo trabajar en forma remota o presencial desde Godoy Cruz, Mendoza."
+      en: "I'm looking for my first job in IT, whether a full-time or part-time position or an internship, and I'm open to learning across different areas, not just web development. I can work remotely or on-site from Godoy Cruz, Mendoza."
     - id: proyectos
       es: "Desarrollé VegaTech, la landing de mi emprendimiento de reparación de celulares, y el sitio institucional de Crisur Polarizados. Además, estoy construyendo un sistema para restaurantes."
       en: "I built VegaTech, the landing page for my phone repair business, and the website for Crisur Polarizados. I'm also building a restaurant ordering system."
@@ -43,8 +43,8 @@ hiring:
     es: "Remoto o presencial"
     en: "Remote or on-site"
   seeking:
-    es: "Busco pasantía o part-time"
-    en: "I am looking for an internship or part-time role"
+    es: "Busco empleo en IT: full-time, part-time o pasantía"
+    en: "An IT job: full-time, part-time or internship"
   availability:
     es: "Curso por la mañana y estoy disponible por la tarde"
     en: "I study in the mornings and I'm available in the afternoons"

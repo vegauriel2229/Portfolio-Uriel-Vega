@@ -1327,17 +1327,38 @@ html {
  * [data-terminals-live], which skills.ts sets when the script runs
  * (D-170: always). Only `transform` and `opacity` move; the block cursor blinks
  * 3 times and stays solid (finite, R23.7).
+ * D-173 polish: path in the bar, decorative line numbers, a soft violet glow
+ * and a line highlight on hover.
  */
 @layer components {
   .term {
     border: 1px solid var(--color-line);
     border-radius: var(--radius-lg);
-    background: var(--color-bg-deep);
+    background:
+      radial-gradient(
+        120% 80% at 100% 0%,
+        color-mix(in oklab, var(--color-accent) 9%, transparent),
+        transparent 60%
+      ),
+      var(--color-bg-deep);
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--color-accent) 8%, transparent),
+      0 18px 48px -24px
+        color-mix(in oklab, var(--color-violet-500) 55%, transparent);
   }
   .term-bar {
     display: flex;
     gap: 0.45rem;
-    padding: 0.8rem 1rem 0;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--color-hair);
+  }
+  .term-path {
+    margin-left: 0.6rem;
+    font-size: var(--text-small);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    color: var(--color-muted);
   }
   .term-bar i {
     width: 10px;
@@ -1350,15 +1371,44 @@ html {
   }
   .term-lines {
     margin: 0;
-    padding: 0.8rem 1rem 1rem;
+    padding: 0.6rem 0.5rem 0.8rem;
     list-style: none;
+    counter-reset: term-line;
   }
   .term-line {
     display: flex;
     gap: 0.6rem;
     align-items: baseline;
-    padding-block: 0.3rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: var(--radius-sm);
     overflow-wrap: anywhere;
+    counter-increment: term-line;
+    transition: background-color var(--duration-reveal) var(--ease-out);
+  }
+  /* Decorative gutter number; the empty alt text keeps screen readers from reading it. */
+  .term-line::before {
+    content: counter(term-line);
+    content: counter(term-line) / "";
+    flex: none;
+    min-width: 1.4em;
+    font-size: var(--text-small);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--color-line);
+    opacity: 0.7;
+  }
+  @media (hover: hover) {
+    .term-line:hover {
+      background-color: color-mix(
+        in oklab,
+        var(--color-accent) 8%,
+        transparent
+      );
+    }
+    .term-line:hover::before {
+      color: var(--color-accent);
+      opacity: 1;
+    }
   }
   .term-prompt {
     flex: none;
@@ -1376,7 +1426,7 @@ html {
       font-size: var(--text-h4);
     }
     .term-lines {
-      padding: 0.9rem 1.5rem 1.25rem;
+      padding: 0.7rem 1rem 1.1rem;
     }
     .term-bar {
       padding-inline: 1.5rem;

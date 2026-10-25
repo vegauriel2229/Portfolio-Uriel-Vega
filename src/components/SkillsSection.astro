@@ -20,6 +20,11 @@ const groups = LEVELS.map((id) => ({
   // Hidden text read after each name: "Python, nivel Avanzado" (R7.5).
   levelText: `${localize(ui.skills.levelPrefix, locale)} ${localize(skillLevels[id]!.label, locale)}`,
   skills: skills.filter((skill) => skill.level === id),
+  // D-173: decorative path in the window bar, "~/skills/basico" (no accents).
+  path: `~/skills/${localize(skillLevels[id]!.label, locale)
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()}`,
 })).filter((group) => group.skills.length > 0);
 
 const projectName = (id: string): string =>
@@ -63,6 +68,7 @@ const projectName = (id: string): string =>
               <i></i>
               <i></i>
               <i></i>
+              <span class="term-path">{group.path}</span>
             </div>
             <ul role="list" class="term-lines">
               {group.skills.map((skill) => (
